@@ -45,6 +45,11 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- Agregar comando GitConflictListQF al menú de Git bajo <leader>g
-vim.keymap.set("n", "<leader>gx", "<cmd>GitConflictListQF<cr>", { desc = " Lista de Conflictos" })
+vim.keymap.set(
+  "n",
+  "<leader>gx",
+  "<cmd>GitConflictListQF<cr>",
+  { noremap = true, silent = true, desc = " Lista de Conflictos" }
+)
 -- Agregar una opción para ejecutar :LspRestart con <leader>x -> r, con icono de reinicio 
 vim.keymap.set("n", "<leader>xr", "<cmd>LspRestart<cr>", { desc = " Reiniciar LSP" })

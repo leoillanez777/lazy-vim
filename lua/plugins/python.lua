@@ -1,81 +1,187 @@
 return {
+  -- Configuración de TreeSitter
   {
-    "rcarriga/nvim-dap-ui",
-    dependencies = "mfussenegger/nvim-dap",
-    config = function()
-      local dap_local = require("dap")
-      local dapui_local = require("dapui")
-      dapui_local.setup()
-      dap_local.listeners.after.event_initialized["dapui_config"] = function()
-        dapui_local.open()
-      end
-      dap_local.listeners.before.event_terminated["dapui_config"] = function()
-        dapui_local.close()
-      end
-      dap_local.listeners.before.event_exited["dapui_config"] = function()
-        dapui_local.open()
+    "nvim-treesitter/nvim-treesitter",
+    opts = function(_, opts)
+      if type(opts.ensure_installed) == "table" then
+        vim.list_extend(opts.ensure_installed, { "python", "ninja", "rst" })
       end
     end,
   },
-  {
-    "williamboman/mason.nvim",
-    opts = {
-      ensure_installed = { "pyright", "debugpy", "ruff", "black", "mypy" },
-    },
-  },
+
+  -- Configuración de LSP
   {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
         pyright = {
-          analysis = {
-            reportLineTooLong = "none",
-          },
-        },
-        ruff_lsp = {
-          init_options = {
-            settings = {
-              args = {
-                "--ignore=E501",
+          settings = {
+            python = {
+              analysis = {
+                typeCheckingMode = "basic",
+                diagnosticMode = "workspace",
+                inlayHints = {
+                  variableTypes = true,
+                  functionReturnTypes = true,
+                },
               },
             },
           },
         },
+        ruff_lsp = {
+          keys = {
+            {
+              "<leader>co",
+              function()
+                vim.lsp.buf.code_action({
+                  apply = true,
+                  context = {
+                    only = { "source.organizeImports" },
+                    diagnostics = {},
+                  },
+                })
+              end,
+              desc = "Organize Imports",
+            },
+          },
+        },
+      },
+      setup = {
+        ruff_lsp = function()
+          LazyVim.lsp.on_attach(function(client, _)
+            -- Disable hover in favor of Pyright
+            client.server_capabilities.hoverProvider = false
+          end)
+        end,
       },
     },
   },
+
+  -- Debugging
   {
     "mfussenegger/nvim-dap",
-    recommended = true,
-    desc = "Debugging support. Requires language specific adapters to be configured. (see lang extras)",
-
+    optional = true,
     dependencies = {
-      "rcarriga/nvim-dap-ui",
-      -- virtual text for the debugger
-      {
-        "theHamsta/nvim-dap-virtual-text",
-        opts = {},
+      "mfussenegger/nvim-dap-python",
+      -- stylua: ignore
+      keys = {
+        { "<leader>dPt", function() require("dap-python").test_method() end, desc = "Debug Method", ft = "python" },
+        { "<leader>dPc", function() require("dap-python").test_class() end, desc = "Debug Class", ft = "python" },
       },
+      config = function()
+        local path = vim.fn.expand("~/.virtualenvs/debugpy/bin/python")
+        require("dap-python").setup(path)
+      end,
     },
-  },
-  {
-    "mfussenegger/nvim-dap-python",
-    ft = "python",
-    dependencies = {
-      "mfussenegger/nvim-dap",
-      "rcarriga/nvim-dap-ui",
-    },
-    config = function()
-      local path = "~/.virtualenvs/debugpy/bin/python3.12"
-      require("dap-python").setup(path)
+    opts = function()
       local dap = require("dap")
       table.insert(dap.configurations.python, {
         type = "python",
         request = "launch",
-        name = "My custom launch configuration",
+        name = "Launch file",
         program = "${file}",
-        -- ... more options, see https://github.com/microsoft/debugpy/wiki/Debug-configuration-settings
+        pythonPath = function()
+          local cwd = vim.fn.getcwd()
+          if vim.fn.executable(cwd .. "/venv/bin/python") == 1 then
+            return cwd .. "/venv/bin/python"
+          elseif vim.fn.executable(cwd .. "/.venv/bin/python") == 1 then
+            return cwd .. "/.venv/bin/python"
+          else
+            return "/usr/bin/python"
+          end
+        end,
       })
+    end,
+  },
+
+  -- DAP UI
+  {
+    "rcarriga/nvim-dap-ui",
+    opts = {},
+    config = function(_, opts)
+      local dap = require("dap")
+      local dapui = require("dapui")
+      dapui.setup(opts)
+      dap.listeners.after.event_initialized["dapui_config"] = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated["dapui_config"] = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited["dapui_config"] = function()
+        dapui.close()
+      end
+    end,
+  },
+
+  -- Test Runner
+  {
+    "nvim-neotest/neotest",
+    optional = true,
+    dependencies = {
+      "nvim-neotest/neotest-python",
+    },
+    opts = {
+      adapters = {
+        ["neotest-python"] = {
+          -- Configura aquí las opciones específicas para neotest-python
+          runner = "pytest",
+          python = function()
+            local cwd = vim.fn.getcwd()
+            if vim.fn.executable(cwd .. "/venv/bin/python") == 1 then
+              return cwd .. "/venv/bin/python"
+            elseif vim.fn.executable(cwd .. "/.venv/bin/python") == 1 then
+              return cwd .. "/.venv/bin/python"
+            else
+              return "/usr/bin/python"
+            end
+          end,
+        },
+      },
+    },
+  },
+
+  -- Configuración de mason-nvim-dap
+  {
+    "jay-babu/mason-nvim-dap.nvim",
+    optional = true,
+    opts = {
+      handlers = {
+        python = function() end, -- Evita que mason-nvim-dap interfiera con la configuración de dap-python
+      },
+    },
+  },
+
+  -- Virtual Environment Selector
+  {
+    "linux-cultist/venv-selector.nvim",
+    cmd = "VenvSelect",
+    opts = {
+      name = {
+        "venv",
+        ".venv",
+        "env",
+        ".env",
+      },
+    },
+    keys = { { "<leader>cv", "<cmd>:VenvSelect<cr>", desc = "Select VirtualEnv" } },
+  },
+
+  -- Ensure Mason installs necessary tools
+  {
+    "williamboman/mason.nvim",
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, { "pyright", "debugpy", "ruff", "black", "mypy" })
+    end,
+  },
+
+  -- Configuración de nvim-cmp para auto-brackets en Python
+  {
+    "hrsh7th/nvim-cmp",
+    opts = function(_, opts)
+      opts.auto_brackets = opts.auto_brackets or {}
+      table.insert(opts.auto_brackets, "python")
     end,
   },
 }
