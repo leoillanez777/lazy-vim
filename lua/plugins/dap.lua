@@ -4,7 +4,14 @@ return {
   dependencies = {
     "jay-babu/mason-nvim-dap.nvim",
     config = function()
-      require("mason-nvim-dap").setup({ ensure_installed = { "firefox", "node2" } })
+      require("mason-nvim-dap").setup({
+        ensure_installed = { "firefox", "node2" },
+        handlers = {
+          function(config)
+            require("mason-nvim-dap").default_setup(config)
+          end,
+        },
+      })
     end,
     "theHamsta/nvim-dap-virtual-text",
     "rcarriga/nvim-dap-ui",
@@ -193,10 +200,10 @@ return {
       })
     end
 
-    -- load mason-nvim-dap here, after all adapters have been setup
-    if LazyVim.has("mason-nvim-dap.nvim") then
-      require("mason-nvim-dap").setup(LazyVim.opts("mason-nvim-dap.nvim"))
-    end
+    -- -- load mason-nvim-dap here, after all adapters have been setup
+    -- if LazyVim.has("mason-nvim-dap.nvim") then
+    --   require("mason-nvim-dap").setup(LazyVim.opts("mason-nvim-dap.nvim"))
+    -- end
 
     vim.api.nvim_set_hl(0, "DapStoppedLine", { default = true, link = "Visual" })
 
