@@ -45,17 +45,19 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- Agregar comando GitConflictListQF al menú de Git bajo <leader>g
--- vim.keymap.set("n", "<leader>gx", function()
---   vim.cmd("GitConflictListQf")
--- end, { desc = " Lista de Conflictos", noremap = true, silent = true })
+local wk = require("which-key")
+wk.add({
+  { "<leader>g", group = "git" },
+  { "<leader>gC", group = " Conflictos" },
+})
 vim.keymap.set("n", "<leader>gCo", "<cmd>GitConflictChooseOurs<cr>", { desc = " Escoger los cambios actuales" })
 vim.keymap.set("n", "<leader>gCt", "<cmd>GitConflictChooseTheirs<cr>", { desc = " Escoger los cambios entrantes" })
-vim.keymap.set("n", "<leader>gCb", "<cmd>GitConflictChooseBoth<cr>", { desc = " Escoger ambos cambios" })
-vim.keymap.set("n", "<leader>gCe", "<cmd>GitConflictChooseNone<cr>", { desc = " Escoger ninguno de los cambios" })
+vim.keymap.set("n", "<leader>gCb", "<cmd>GitConflictChooseBoth<cr>", { desc = " Escoger ambos cambios" })
+vim.keymap.set("n", "<leader>gCe", "<cmd>GitConflictChooseNone<cr>", { desc = "󰝾 Escoger ninguno de los cambios" })
 vim.keymap.set("n", "<leader>gCn", "<cmd>GitConflictNextConflict<cr>", { desc = " Siguiente conflicto" })
 vim.keymap.set("n", "<leader>gCN", "<cmd>GitConflictPrevConflict<cr>", { desc = " Conflicto anterior" })
-vim.keymap.set("n", "<leader>gCl", "<cmd>GitConflictListQf<cr>", { desc = " Lista de conflictos" })
-vim.keymap.set("n", "<leader>gCa", "<cmd>Gwrite<cr>", { desc = " Grabar Cambios" })
+vim.keymap.set("n", "<leader>gCl", "<cmd>GitConflictListQf<cr>", { desc = " Lista de conflictos" })
+vim.keymap.set("n", "<leader>gCa", "<cmd>Gwrite<cr>", { desc = " Grabar Cambios" })
 
 -- Agregar una opción para ejecutar :LspRestart con <leader>x -> r, con icono de reinicio 
 vim.keymap.set("n", "<leader>xr", "<cmd>LspRestart<cr>", { desc = " Reiniciar LSP" })
