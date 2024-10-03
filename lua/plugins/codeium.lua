@@ -4,9 +4,13 @@ return {
     -- codeium
     {
       "Exafunction/codeium.nvim",
+      event = "BufEnter",
       cmd = "Codeium",
       build = ":Codeium Auth",
-      opts = {},
+      commit = "937667b2cadc7905e6b9ba18ecf84694cf227567", -- Fije version, porque da error la ultima actualizacion
+      opts = {
+        enable_chat = true,
+      },
     },
     {
       "nvim-lualine/lualine.nvim",

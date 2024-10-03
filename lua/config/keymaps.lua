@@ -47,9 +47,20 @@ vim.api.nvim_create_autocmd("FileType", {
 -- Agregar comando GitConflictListQF al menú de Git bajo <leader>g
 local wk = require("which-key")
 wk.add({
+  { "<leader>F", group = "Fugit 2", icon = { icon = "", color = "orange" } },
   { "<leader>g", group = "git" },
   { "<leader>gC", group = " Conflictos" },
+  { "<leader>d", group = "Debbuger", icon = "" },
+  { "<leader>C", group = "Codeium", icon = {
+    icon = "",
+    color = "azure",
+  } },
 })
+
+-- Codeium
+vim.keymap.set("n", "<leader>Cc", "<cmd>Codeium Chat<cr>", { desc = "󰈌 Codeium Chat" })
+
+-- Git Conflict
 vim.keymap.set("n", "<leader>gCo", "<cmd>GitConflictChooseOurs<cr>", { desc = " Escoger los cambios actuales" })
 vim.keymap.set("n", "<leader>gCt", "<cmd>GitConflictChooseTheirs<cr>", { desc = " Escoger los cambios entrantes" })
 vim.keymap.set("n", "<leader>gCb", "<cmd>GitConflictChooseBoth<cr>", { desc = " Escoger ambos cambios" })
