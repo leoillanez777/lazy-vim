@@ -24,35 +24,35 @@ return {
   keys = {
     { "<leader>d", desc = "Debug menu" },
     {
-      "<leader>dB",
+      "<F3>",
       function()
         require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))
       end,
       desc = " Breakpoint Condition",
     },
     {
-      "<leader>db",
+      "<F4>",
       function()
         require("dap").toggle_breakpoint()
       end,
       desc = " Toggle Breakpoint",
     },
     {
-      "<leader>dc",
+      "<F5>",
       function()
         require("dap").continue()
       end,
       desc = " Continue",
     },
     {
-      "<leader>da",
+      "<F6>",
       function()
         require("dap").continue({ before = get_args })
       end,
       desc = " Run with Args",
     },
     {
-      "<leader>dC",
+      "<F7>",
       function()
         require("dap").run_to_cursor()
       end,
@@ -66,46 +66,46 @@ return {
       desc = "Go to Line (No Execute)",
     },
     {
-      "<leader>di",
+      "<F11>",
       function()
         require("dap").step_into()
       end,
-      desc = " Step Into",
+      desc = "󰆹 Step Into",
     },
     {
       "<leader>dj",
       function()
         require("dap").down()
       end,
-      desc = "Down",
+      desc = " Down",
     },
     {
       "<leader>dk",
       function()
         require("dap").up()
       end,
-      desc = "Up",
+      desc = " Up",
     },
     {
       "<leader>dl",
       function()
         require("dap").run_last()
       end,
-      desc = "Run Last",
+      desc = "󰘁 Run Last",
     },
     {
-      "<leader>do",
+      "<F9>",
       function()
         require("dap").step_out()
       end,
-      desc = " Step Out",
+      desc = "󰆸 Step Out",
     },
     {
-      "<leader>dO",
+      "<F10>",
       function()
         require("dap").step_over()
       end,
-      desc = " Step Over",
+      desc = " Step Over",
     },
     {
       "<leader>dp",
@@ -119,7 +119,7 @@ return {
       function()
         require("dap").repl.toggle()
       end,
-      desc = "Toggle REPL",
+      desc = " Toggle REPL",
     },
     {
       "<leader>ds",
@@ -129,7 +129,7 @@ return {
       desc = "Session",
     },
     {
-      "<leader>dt",
+      "<F8>",
       function()
         require("dap").terminate()
       end,
@@ -200,11 +200,6 @@ return {
       })
     end
 
-    -- -- load mason-nvim-dap here, after all adapters have been setup
-    -- if LazyVim.has("mason-nvim-dap.nvim") then
-    --   require("mason-nvim-dap").setup(LazyVim.opts("mason-nvim-dap.nvim"))
-    -- end
-
     vim.api.nvim_set_hl(0, "DapStoppedLine", { default = true, link = "Visual" })
 
     for name, sign in pairs(LazyVim.config.icons.dap) do
@@ -216,16 +211,78 @@ return {
     end
 
     -- setup dap config by VsCode launch.json file
+    local dap = require("dap")
     local vscode = require("dap.ext.vscode")
     local json = require("plenary.json")
+
+    ---@diagnostic disable-next-line: duplicate-set-field
     vscode.json_decode = function(str)
       return vim.json.decode(json.json_strip_comments(str))
     end
 
-    -- Extends dap.configurations with entries read from .vscode/launch.json
-    if vim.fn.filereadable(".vscode/launch.json") then
-      vscode.load_launchjs()
+    -- Función para buscar launch.json en la carpeta actual y la superior
+    local function find_launch_json()
+      local current_dir = vim.fn.getcwd()
+      local launch_json_path = current_dir .. "/.vscode/launch.json"
+
+      if vim.fn.filereadable(launch_json_path) == 1 then
+        return launch_json_path
+      else
+        local parent_dir = vim.fn.fnamemodify(current_dir, ":h")
+        local parent_launch_json = parent_dir .. "/.vscode/launch.json"
+
+        if vim.fn.filereadable(parent_launch_json) == 1 then
+          return parent_launch_json
+        end
+      end
+
+      return nil
     end
+
+    -- Función para cargar launch.json
+    local function load_launch_json()
+      local launch_json_path = find_launch_json()
+      if launch_json_path then
+        vscode.load_launchjs(launch_json_path, { cppdbg = { "c", "cpp" }, coreclr = { "cs" } })
+        print("Archivo launch.json cargado desde: " .. launch_json_path)
+      else
+        print("No se encontró el archivo launch.json en la carpeta actual ni en la superior.")
+      end
+    end
+
+    -- Carga launch.json al iniciar
+    load_launch_json()
+
+    -- Función para elegir configuración
+    local function choose_configuration()
+      local launch_json_path = find_launch_json()
+      if launch_json_path then
+        local configs = dap.configurations[vim.bo.filetype] or {}
+        if #configs > 0 then
+          vim.ui.select(configs, {
+            prompt = "Elige una configuración de depuración:",
+            format_item = function(config)
+              return config.name
+            end,
+          }, function(config)
+            if config then
+              dap.run(config)
+            end
+          end)
+        else
+          print("No hay configuraciones disponibles para este tipo de archivo.")
+        end
+      else
+        print("No se encontró el archivo launch.json. Ejecutando la configuración por defecto.")
+        dap.continue()
+      end
+    end
+
+    -- Reemplaza la tecla existente para iniciar la depuración
+    vim.keymap.set("n", "<leader>dc", choose_configuration, { desc = " Choose Debug Configuration" })
+
+    -- Agrega una tecla para recargar launch.json
+    vim.keymap.set("n", "<leader>dR", load_launch_json, { desc = "󰑓 Reload launch.json" })
 
     local function load_env_variables()
       local variables = {}
@@ -247,8 +304,6 @@ return {
       end
       return variables
     end
-
-    local dap = require("dap")
 
     -- Añade la propiedad env a cada configuración de Go existente
     for _, config in pairs(dap.configurations.go or {}) do
