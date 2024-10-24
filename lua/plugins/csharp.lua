@@ -66,6 +66,61 @@ return {
       end
     end
 
+    -- función para ejecutar dotnet ef migrations
+    local function run_ef_migrations()
+      local csproj_files = find_csproj_files()
+      local csproj_file
+      if #csproj_files == 0 then
+        print("No se encontraron archivos .csproj")
+        return
+      elseif #csproj_files == 1 then
+        csproj_file = csproj_files[1]
+      else
+        csproj_file = vim.fn.input("Seleccione el archivo .csproj: ", csproj_files[1], "file")
+      end
+
+      local project_dir = vim.fn.fnamemodify(csproj_file, ":h")
+      local migration_name = vim.fn.input("Nombre de la migración: ")
+      if migration_name == "" then
+        print("Nombre de migración inválido")
+        return
+      end
+
+      local cmd = string.format("cd %s && dotnet ef migrations add %s", project_dir, migration_name)
+      local output = vim.fn.system(cmd)
+      if vim.v.shell_error ~= 0 then
+        vim.api.nvim_err_writeln("Error al crear la migración:")
+        vim.api.nvim_echo({ { output, "ErrorMsg" } }, true, {})
+      else
+        print("Migración creada exitosamente: " .. migration_name)
+      end
+    end
+
+    -- Función para ejecutar dotnet ef database update
+    local function run_ef_database_update()
+      local csproj_files = find_csproj_files()
+      local csproj_file
+      if #csproj_files == 0 then
+        print("No se encontraron archivos .csproj")
+        return
+      elseif #csproj_files == 1 then
+        csproj_file = csproj_files[1]
+      else
+        csproj_file = vim.fn.input("Seleccione el archivo .csproj: ", csproj_files[1], "file")
+      end
+
+      local project_dir = vim.fn.fnamemodify(csproj_file, ":h")
+
+      local cmd = string.format("cd %s && dotnet ef database update", project_dir)
+      local output = vim.fn.system(cmd)
+      if vim.v.shell_error ~= 0 then
+        vim.api.nvim_err_writeln("Error al actualizar la base de datos:")
+        vim.api.nvim_echo({ { output, "ErrorMsg" } }, true, {})
+      else
+        print("Base de datos actualizada exitosamente")
+      end
+    end
+
     dap.configurations.cs = {
       {
         type = "coreclr",
@@ -85,5 +140,15 @@ return {
     vim.keymap.set("n", "<leader>dX", function()
       build_all_projects()
     end, { desc = " Build All .NET Projects" })
+
+    -- keymap para ejecutar dotnet ef migrations
+    vim.keymap.set("n", "<leader>dm", function()
+      run_ef_migrations()
+    end, { desc = "󱘭 Run dotnet ef migrations" })
+
+    -- keymap para ejecutar dotnet ef database update
+    vim.keymap.set("n", "<leader>du", function()
+      run_ef_database_update()
+    end, { desc = "󰳿 Run dotnet ef database update" })
   end,
 }

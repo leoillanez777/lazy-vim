@@ -28,21 +28,11 @@ return {
             "typescriptreact",
             "typescript.tsx",
             "vue",
+            "ts",
           },
           settings = {
             complete_function_calls = true,
             vtsls = {
-              --tsserver = {
-              --globalPlugins = {
-              --  {
-              --    name = "@vue/typescript-plugin",
-              --    location = LazyVim.get_pkg_path("vue-language-server", "/node_modules/@vue/language-server"),
-              --    languages = { "vue" },
-              --    configNamespace = "typescript",
-              --    enableForWorkspaceTypeScriptVersions = true,
-              --  },
-              --},
-              --},
               enableMoveToFileCodeAction = true,
               autoUseWorkspaceTsdk = true,
               experimental = {
@@ -63,7 +53,7 @@ return {
                 parameterNames = { enabled = "literals" },
                 parameterTypes = { enabled = true },
                 propertyDeclarationTypes = { enabled = true },
-                variableTypes = { enabled = false },
+                variableTypes = { enabled = true },
               },
             },
             javascript = {
@@ -133,6 +123,7 @@ return {
           return true
         end,
         vtsls = function(_, opts)
+          -- Configura el 'on_attach' para habilitar el hover.
           LazyVim.lsp.on_attach(function(client, buffer)
             client.commands["_typescript.moveToFileRefactoring"] = function(command, ctx)
               ---@type string, string, lsp.Range
@@ -183,7 +174,7 @@ return {
               end)
             end
           end, "vtsls")
-          -- copy typescript settings to javascript
+          -- Copia la configuración de TypeScript a JavaScript
           opts.settings.javascript =
             vim.tbl_deep_extend("force", {}, opts.settings.typescript, opts.settings.javascript or {})
         end,
@@ -195,6 +186,7 @@ return {
     opts = function(_, opts)
       opts.ensure_installed = opts.ensure_installed or {}
       table.insert(opts.ensure_installed, "js-debug-adapter")
+      table.insert(opts.ensure_installed, "vtsls")
     end,
   },
   {
@@ -286,7 +278,7 @@ return {
   },
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = { ensure_installed = { "vue" } },
+    opts = { ensure_installed = { "vue", "typescript", "javascript" } },
   },
   {
     "hrsh7th/nvim-cmp",

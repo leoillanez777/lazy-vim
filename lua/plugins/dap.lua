@@ -244,7 +244,7 @@ return {
       local launch_json_path = find_launch_json()
       if launch_json_path then
         vscode.load_launchjs(launch_json_path, { cppdbg = { "c", "cpp" }, coreclr = { "cs" } })
-        print("Archivo launch.json cargado desde: " .. launch_json_path)
+        print("Launch.json cargado: " .. launch_json_path)
       else
         print("No se encontró el archivo launch.json en la carpeta actual ni en la superior.")
       end
