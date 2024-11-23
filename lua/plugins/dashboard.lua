@@ -1,22 +1,3 @@
-local logo = [[
-⠀⠀⠀⠀⣀⣤⣤⣶⣾⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣷⣶⣦⣤⣀⠀⠀⠀⠀⠀
-⢀⣴⣶⣿⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⣧⣼⠀⠀⠀⠀⣀⣴⣿⣿⣿⣿⣿⣿⣷⣦⣄⡀
-⠀⠀⠀⠈⠉⠛⣿⣿⣿⣿⣿⣷⣦⣀⢸⣿⣿⡇⣀⣤⣿⣯⣿⣿⣿⣿⠟⠋⠉⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠸⠿⠿⠿⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⠋⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠻⣿⣿⣿⣿⠿⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
->>> Leo Illanez 🧉 <<<
- **       ********   *******         *******   ******** **      **
-/**      /**/////   **/////**       /**////** /**///// /**     /**
-/**      /**       **     //**      /**    /**/**      /**     /**
-/**      /******* /**      /**      /**    /**/******* //**    **
-/**      /**////  /**      /**      /**    /**/**////   //**  **
-/**      /**      //**     **       /**    ** /**        //****
-/********/******** //*******        /*******  /********   //**
-//////// ////////   ///////         ///////   ////////     //
-]]
-logo = string.rep("\n", 8) .. logo .. "\n\n"
-
 return {
   { "folke/snacks.nvim", opts = { dashboard = { enabled = false } } },
   {
@@ -26,14 +7,14 @@ return {
       require("dashboard").setup({
         theme = "hyper",
         config = {
-          header = vim.split(logo, "\n"),
           week_header = {
             enable = true,
+            concat = "Leonardo Illanez",
           },
           shortcut = {
             { desc = "󰊳 Update", group = "@property", action = "Lazy update", key = "u" },
             {
-              icon = " ",
+              icon = " ",
               icon_hl = "@variable",
               desc = "Files",
               group = "Label",
@@ -41,35 +22,42 @@ return {
               key = "f",
             },
             {
-              desc = " Apps",
+              icon = "󰋗 ",
+              desc = "Help",
               group = "DiagnosticHint",
-              action = "Telescope app",
-              key = "a",
+              action = "Telescope help_tags",
+              key = "h",
             },
             {
-              desc = " dotfiles",
+              icon = " ",
+              desc = "Mason",
               group = "Number",
-              action = "Telescope dotfiles",
-              key = "d",
+              action = "Mason",
+              key = "m",
             },
           },
           packages = { enable = true },
           project = {
             enable = true,
             limit = 8,
-            icon = "",
-            label = "",
+            icon = " ",
+            label = "Projects",
             action = "Telescope find_files cwd=",
           },
           mru = {
             enable = true,
-            limit = 10,
-            icon = "",
-            label = "",
+            limit = 8,
+            icon = " ",
+            label = "Recent Files",
+          },
+          footer = {
+            " ",
+            " Github: https://github.com/LeonardoIllanez",
+            "Made with  by Leonardo Illanez",
           },
         },
       })
     end,
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies = { "nvim-tree/nvim-web-devicons", "nvim-telescope/telescope.nvim" },
   },
 }
