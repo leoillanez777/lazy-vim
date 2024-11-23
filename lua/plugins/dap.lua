@@ -1,3 +1,15 @@
+---@return table
+local function get_args()
+  local args = {}
+  local input = vim.fn.input("Arguments: ")
+  if input ~= "" then
+    for arg in input:gmatch("%S+") do
+      table.insert(args, arg)
+    end
+  end
+  return args
+end
+
 return {
   "mfussenegger/nvim-dap",
   lazy = true,

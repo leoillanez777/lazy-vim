@@ -1,6 +1,6 @@
 return {
   "Cliffback/netcoredbg-macOS-arm64.nvim",
-  dependencies = { "mfussenegger/nvim-dap" },
+  dependencies = { "mfussenegger/nvim-dap", "neovim/nvim-lspconfig", "Hoffs/omnisharp-extended-lsp.nvim" },
   config = function()
     local dap = require("dap")
     require("netcoredbg-macOS-arm64").setup(require("dap"))
@@ -10,9 +10,42 @@ return {
       args = { "--interpreter=vscode" },
     }
 
+    -- Configuración de OmniSharp
+    local pid = vim.fn.getpid()
+    local lspconfig = require("lspconfig")
+    lspconfig.omnisharp.setup({
+      cmd = { "omnisharp", "--languageserver", "--hostPID", tostring(pid) },
+      root_dir = lspconfig.util.root_pattern("*.sln", "*.csproj"),
+      enable_roslyn_analyzers = true,
+      organize_imports_on_format = true,
+      enable_import_completion = true,
+      handlers = {
+        ["textDocument/definition"] = require("omnisharp_extended").handler,
+      },
+      on_attach = function(client, bufnr)
+        -- Habilitar formato al guardar
+        if client.supports_method("textDocument/formatting") then
+          vim.api.nvim_create_autocmd("BufWritePre", {
+            buffer = bufnr,
+            callback = function()
+              vim.lsp.buf.format({
+                bufnr = bufnr,
+                timeout_ms = 5000,
+                async = false,
+              })
+            end,
+          })
+        end
+      end,
+    })
+
     -- Función para encontrar todos los archivos .csproj en el directorio actual y sus subdirectorios
     local function find_csproj_files()
       local handle = io.popen("find . -name '*.csproj'")
+      if not handle then
+        vim.notify("Error al ejecutar find", vim.log.levels.ERROR)
+        return {}
+      end
       local result = handle:read("*a")
       handle:close()
       local files = {}
@@ -121,11 +154,16 @@ return {
       end
     end
 
+    ---@class DapConfiguration
+    ---@field programPath string|nil
+    ---@field type string
+    ---@type DapConfiguration[]
     dap.configurations.cs = {
       {
         type = "coreclr",
         name = "launch - netcoredbg - neovim",
         request = "launch",
+        programPath = "",
         program = function()
           if not dap.configurations.cs[1].programPath then
             dap.configurations.cs[1].programPath = find_debug_dll()
