@@ -234,18 +234,29 @@ return {
 
     -- Función para buscar launch.json en la carpeta actual y la superior
     local function find_launch_json()
-      local current_dir = vim.fn.getcwd()
-      local launch_json_path = current_dir .. "/.vscode/launch.json"
+      local root_patterns = { ".git", ".vscode", "*.sln", "*.csproj" }
+      local root_dir
 
-      if vim.fn.filereadable(launch_json_path) == 1 then
-        return launch_json_path
-      else
-        local parent_dir = vim.fn.fnamemodify(current_dir, ":h")
-        local parent_launch_json = parent_dir .. "/.vscode/launch.json"
-
-        if vim.fn.filereadable(parent_launch_json) == 1 then
-          return parent_launch_json
+      -- Buscar el directorio raíz del proyecto
+      for _, pattern in ipairs(root_patterns) do
+        root_dir = vim.fs.find(pattern, {
+          upward = true,
+          type = "file",
+          path = vim.fn.getcwd(),
+        })[1]
+        if root_dir then
+          root_dir = vim.fn.fnamemodify(root_dir, ":h")
+          break
         end
+      end
+
+      if not root_dir then
+        return nil
+      end
+
+      local launch_json = root_dir .. "/.vscode/launch.json"
+      if vim.fn.filereadable(launch_json) == 1 then
+        return launch_json
       end
 
       return nil
@@ -255,15 +266,22 @@ return {
     local function load_launch_json()
       local launch_json_path = find_launch_json()
       if launch_json_path then
-        vscode.load_launchjs(launch_json_path, { cppdbg = { "c", "cpp" }, coreclr = { "cs" } })
-        print("Launch.json cargado: " .. launch_json_path)
-      else
-        print("No se encontró el archivo launch.json en la carpeta actual ni en la superior.")
+        vscode.load_launchjs(launch_json_path, {
+          cppdbg = { "c", "cpp" },
+          coreclr = { "cs" },
+          ["pwa-node"] = { "typescript", "javascript" },
+        })
+        vim.notify("Launch.json cargado: " .. launch_json_path, vim.log.levels.INFO)
       end
     end
 
-    -- Carga launch.json al iniciar
-    load_launch_json()
+    -- Cargar launch.json al iniciar DAP
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = { "cs", "typescript", "javascript" },
+      callback = function()
+        load_launch_json()
+      end,
+    })
 
     -- Función para elegir configuración
     local function choose_configuration()
@@ -289,6 +307,19 @@ return {
         dap.continue()
       end
     end
+
+    -- Configuración por defecto si no hay launch.json
+    dap.configurations.cs = dap.configurations.cs
+      or {
+        {
+          type = "coreclr",
+          name = "Launch - NetCoreDbg",
+          request = "launch",
+          program = function()
+            return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file")
+          end,
+        },
+      }
 
     -- Reemplaza la tecla existente para iniciar la depuración
     vim.keymap.set("n", "<leader>dc", choose_configuration, { desc = " Choose Debug Configuration" })
