@@ -1,90 +1,7 @@
 return {
-  { "Hoffs/omnisharp-extended-lsp.nvim", lazy = true },
-  {
-    "nvim-treesitter/nvim-treesitter",
-    opts = { ensure_installed = { "c_sharp" } },
-  },
   {
     "williamboman/mason.nvim",
     opts = { ensure_installed = { "csharpier", "netcoredbg" } },
-  },
-  {
-    "Issafalcon/neotest-dotnet",
-  },
-  {
-    "neovim/nvim-lspconfig",
-    opts = {
-      servers = {
-        omnisharp = {
-          handlers = {
-            ["textDocument/definition"] = function(...)
-              return require("omnisharp_extended").handler(...)
-            end,
-          },
-          keys = {
-            {
-              "gd",
-              LazyVim.has("telescope.nvim") and function()
-                require("omnisharp_extended").telescope_lsp_definitions()
-              end or function()
-                require("omnisharp_extended").lsp_definitions()
-              end,
-              desc = "Goto Definition",
-            },
-          },
-          enable_roslyn_analyzers = true,
-          organize_imports_on_format = true,
-          enable_import_completion = true,
-          -- Configuración segura de inlay hints para C#
-          settings = {
-            omnisharp = {
-              useModernNet = true,
-              enableRoslynAnalyzers = true,
-              enableEditorConfigSupport = true,
-              enableImportCompletion = true,
-              enableAsyncCompletion = true,
-              analyzeOpenDocumentsOnly = false,
-              inlayHintsOptions = {
-                enableForParameters = true,
-                forLiteralParameters = true,
-                forIndexerParameters = true,
-                forObjectCreationParameters = true,
-                forOtherParameters = true,
-                suppressForParametersThatDifferOnlyBySuffix = false,
-                suppressForParametersThatMatchMethodIntent = false,
-                suppressForParametersThatMatchArgumentName = false,
-              },
-            },
-          },
-        },
-      },
-      setup = {
-        omnisharp = function(_, opts)
-          -- Configuración específica para inlay hints en C#
-          opts.on_attach = function(client, bufnr)
-            -- Mantén la configuración existente
-            if client.supports_method("textDocument/formatting") then
-              vim.api.nvim_create_autocmd("BufWritePre", {
-                buffer = bufnr,
-                callback = function()
-                  vim.lsp.buf.format({
-                    bufnr = bufnr,
-                    timeout_ms = 5000,
-                    async = false,
-                  })
-                end,
-              })
-            end
-
-            -- Habilita inlay hints solo si el cliente los soporta
-            if client.server_capabilities.inlayHintProvider then
-              -- Configuración segura de inlay hints
-              vim.lsp.inlay_hint.enable(bufnr, true)
-            end
-          end
-        end,
-      },
-    },
   },
   {
     "Cliffback/netcoredbg-macOS-arm64.nvim",
@@ -99,35 +16,6 @@ return {
         command = "/usr/local/netcoredbg",
         args = { "--interpreter=vscode" },
       }
-
-      -- Configuración de OmniSharp
-      local pid = vim.fn.getpid()
-      local lspconfig = require("lspconfig")
-      lspconfig.omnisharp.setup({
-        cmd = { "omnisharp", "--languageserver", "--hostPID", tostring(pid) },
-        root_dir = lspconfig.util.root_pattern("*.sln", "*.csproj"),
-        enable_roslyn_analyzers = true,
-        organize_imports_on_format = true,
-        enable_import_completion = true,
-        handlers = {
-          ["textDocument/definition"] = require("omnisharp_extended").handler,
-        },
-        on_attach = function(client, bufnr)
-          -- Habilitar formato al guardar
-          if client.supports_method("textDocument/formatting") then
-            vim.api.nvim_create_autocmd("BufWritePre", {
-              buffer = bufnr,
-              callback = function()
-                vim.lsp.buf.format({
-                  bufnr = bufnr,
-                  timeout_ms = 5000,
-                  async = false,
-                })
-              end,
-            })
-          end
-        end,
-      })
 
       -- Función para encontrar todos los archivos .csproj en el directorio actual y sus subdirectorios
       local function find_csproj_files()

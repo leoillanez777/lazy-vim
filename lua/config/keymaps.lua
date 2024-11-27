@@ -55,6 +55,7 @@ wk.add({
     icon = "",
     color = "azure",
   } },
+  { "<leader>cf", group = "Format", icon = "" },
 })
 
 -- Codeium
@@ -72,3 +73,17 @@ vim.keymap.set("n", "<leader>gCa", "<cmd>Gwrite<cr>", { desc = " Grabar Cambi
 
 -- Agregar una opción para ejecutar :LspRestart con <leader>x -> r, con icono de reinicio 
 vim.keymap.set("n", "<leader>xr", "<cmd>LspRestart<cr>", { desc = " Reiniciar LSP" })
+
+-- Format commands
+vim.keymap.set("n", "<leader>cfd", vim.lsp.buf.format, { desc = "Format Document" })
+vim.keymap.set("v", "<leader>cfd", vim.lsp.buf.format, { desc = "Format Selection" })
+
+-- Format on save toggle
+vim.keymap.set("n", "<leader>cft", function()
+  local format_on_save = vim.b.format_on_save
+  if format_on_save == nil then
+    format_on_save = true
+  end
+  vim.b.format_on_save = not format_on_save
+  print("Format on save: " .. tostring(not format_on_save))
+end, { desc = "Toggle Format on Save" })

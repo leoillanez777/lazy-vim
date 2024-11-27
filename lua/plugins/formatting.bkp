@@ -1,18 +1,12 @@
 return {
+
+  }
+return {
   "stevearc/conform.nvim",
+  optional = true,
   dependencies = { "mason.nvim" },
   lazy = true,
   cmd = "ConformInfo",
-  keys = {
-    {
-      "<leader>cFL",
-      function()
-        require("conform").format({ formatters = { "injected" }, timeout_ms = 3000 })
-      end,
-      mode = { "n", "v" },
-      desc = "Format Injected Langs",
-    },
-  },
   init = function()
     -- Install the conform formatter on VeryLazy
     LazyVim.on_very_lazy(function()
@@ -35,11 +29,19 @@ return {
   opts = function()
     ---@type conform.setupOpts
     return {
+      default_format_opts = {
+        timeout_ms = 3000,
+        async = false, -- not recommended to change
+        quiet = false, -- not recommended to change
+        lsp_format = "fallback", -- not recommended to change
+      },
       -- Define el formato predeterminado
       formatters_by_ft = {
         lua = { "stylua" },
         fish = { "fish_indent" },
         sh = { "shfmt" },
+        cs = { "csharpier" },
+        python = { "black" },
         javascript = { "prettier" },
         typescript = { "prettier" },
         vue = { "prettier" },
@@ -48,14 +50,12 @@ return {
         json = { "prettier" },
         yaml = { "prettier" },
         markdown = { "prettier" },
-        python = { "black", "isort" },
         ["_"] = { "trim_whitespace" },
       },
       -- Configuraciones de formatadores específicos
       formatters = {
         injected = {
           options = {
-            ignore_errors = true,
             lang_to_ext = {
               bash = "sh",
               c_sharp = "cs",
@@ -80,7 +80,9 @@ return {
           prepend_args = { "--config-precedence", "prefer-file" },
         },
         csharpier = {
-          prepend_args = { "--write-stdout", "--indent-size", "2" },
+          command = vim.fn.executable("dotnet-csharpier") == 1 and "dotnet-csharpier" or "csharpier",
+          args = { "--write-stdout" },
+          stdin = true,
         },
         -- Configuración para stylua
         stylua = {
@@ -90,15 +92,12 @@ return {
         black = {
           prepend_args = { "--line-length", "88" },
         },
-        -- Configuración para isort
-        isort = {
-          prepend_args = { "--profile", "black" },
-        },
         -- Configuración para shfmt
         shfmt = {
           prepend_args = { "-i", "2" },
         },
       },
+      notify_on_error = true,
     }
   end,
 }
