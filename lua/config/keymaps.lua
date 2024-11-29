@@ -56,6 +56,7 @@ wk.add({
     color = "azure",
   } },
   { "<leader>cf", group = "Format", icon = "" },
+  { "<leader>a", group = "Avante", icon = "󰧑" },
 })
 
 -- Codeium

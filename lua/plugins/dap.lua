@@ -218,6 +218,7 @@ return {
       sign = type(sign) == "table" and sign or { sign }
       vim.fn.sign_define(
         "Dap" .. name,
+        ---@diagnostic disable-next-line: assign-type-mismatch
         { text = sign[1], texthl = sign[2] or "DiagnosticInfo", linehl = sign[3], numhl = sign[3] }
       )
     end
@@ -350,6 +351,7 @@ return {
 
     -- Añade la propiedad env a cada configuración de Go existente
     for _, config in pairs(dap.configurations.go or {}) do
+      ---@diagnostic disable-next-line: inject-field
       config.env = load_env_variables
     end
   end,
