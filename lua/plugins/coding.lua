@@ -1,6 +1,7 @@
 return {
   {
     "nvim-cmp",
+    lazy = true,
     dependencies = {
       {
         "garymjr/nvim-snippets",

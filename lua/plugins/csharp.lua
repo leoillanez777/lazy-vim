@@ -4,10 +4,22 @@ return {
     opts = { ensure_installed = { "csharpier", "netcoredbg" } },
   },
   {
-    "Cliffback/netcoredbg-macOS-arm64.nvim",
+    "mfussenegger/nvim-dap",
+    lazy = true,
+    event = "VeryLazy",
     dependencies = {
-      "mfussenegger/nvim-dap",
+      { "rcarriga/nvim-dap-ui", lazy = true, event = "VeryLazy" },
+      { "theHamsta/nvim-dap-virtual-text", lazy = true, event = "VeryLazy" },
+      { "nvim-telescope/telescope-dap.nvim", lazy = true },
     },
+  },
+  {
+    "Cliffback/netcoredbg-macOS-arm64.nvim",
+    lazy = true,
+    event = "VeryLazy",
+    cond = function()
+      return vim.fn.executable("/usr/local/netcoredbg") == 1
+    end,
     config = function()
       local dap = require("dap")
       require("netcoredbg-macOS-arm64").setup(require("dap"))

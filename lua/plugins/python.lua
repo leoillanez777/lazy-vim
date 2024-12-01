@@ -60,6 +60,7 @@ return {
   -- Debugging
   {
     "mfussenegger/nvim-dap",
+    lazy = true,
     optional = true,
     dependencies = {
       "mfussenegger/nvim-dap-python",
@@ -179,6 +180,8 @@ return {
   -- Configuración de nvim-cmp para auto-brackets en Python
   {
     "hrsh7th/nvim-cmp",
+    lazy = true,
+    event = "VeryLazy",
     opts = function(_, opts)
       opts.auto_brackets = opts.auto_brackets or {}
       table.insert(opts.auto_brackets, "python")

@@ -13,8 +13,9 @@ end
 return {
   "mfussenegger/nvim-dap",
   lazy = true,
+  event = "VeryLazy",
   dependencies = {
-    "jay-babu/mason-nvim-dap.nvim",
+    { "jay-babu/mason-nvim-dap.nvim", lazy = true, event = "VeryLazy" },
     config = function()
       require("mason-nvim-dap").setup({
         ensure_installed = { "firefox", "node2" },
@@ -25,12 +26,12 @@ return {
         },
       })
     end,
-    "theHamsta/nvim-dap-virtual-text",
-    "rcarriga/nvim-dap-ui",
+    { "theHamsta/nvim-dap-virtual-text", lazy = true, event = "VeryLazy" },
+    { "rcarriga/nvim-dap-ui", lazy = true, event = "VeryLazy" },
     "anuvyklack/hydra.nvim",
-    "nvim-telescope/telescope-dap.nvim",
-    "rcarriga/cmp-dap",
-    "leoluz/nvim-dap-go",
+    { "nvim-telescope/telescope-dap.nvim", lazy = true },
+    { "rcarriga/cmp-dap", lazy = true, event = "VeryLazy" },
+    { "leoluz/nvim-dap-go", lazy = true, event = "VeryLazy" },
     "nvim-neotest/nvim-nio",
   },
   keys = {

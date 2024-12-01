@@ -1,5 +1,6 @@
 return {
   "nvim-cmp",
+  lazy = true,
   dependencies = {
     -- codeium
     {
@@ -15,6 +16,7 @@ return {
     {
       "nvim-lualine/lualine.nvim",
       optional = true,
+      lazy = true,
       event = "VeryLazy",
       opts = function(_, opts)
         table.insert(opts.sections.lualine_x, 2, LazyVim.lualine.cmp_source("codeium"))
