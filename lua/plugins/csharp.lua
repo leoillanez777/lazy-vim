@@ -115,33 +115,74 @@ return {
         end
       end
 
+      -- Función para seleccionar proyectos
+      local function select_projects(csproj_files)
+        -- Proyecto principal por defecto
+        local startup_project = vim.fn.input("Proyecto de inicio (--startup-project): ", "", "file")
+        if startup_project == "" then
+          print("No se especificó el proyecto de inicio")
+          return nil, nil
+        end
+
+        -- Proyecto de datos por defecto
+        local data_project = vim.fn.input("Proyecto de datos (--project): ", "", "file")
+        if data_project == "" then
+          print("No se especificó el proyecto de datos")
+          return nil, nil
+        end
+
+        return startup_project, data_project
+      end
+
       -- función para ejecutar dotnet ef migrations
       local function run_ef_migrations()
         local csproj_files = find_csproj_files()
-        local csproj_file
         if #csproj_files == 0 then
           print("No se encontraron archivos .csproj")
           return
-        elseif #csproj_files == 1 then
-          csproj_file = csproj_files[1]
-        else
-          csproj_file = vim.fn.input("Seleccione el archivo .csproj: ", csproj_files[1], "file")
         end
 
-        local project_dir = vim.fn.fnamemodify(csproj_file, ":h")
+        -- Seleccionar proyectos
+        local startup_project, data_project = select_projects(csproj_files)
+        if not startup_project or not data_project then
+          return
+        end
+
+        -- Obtener nombre de la migración
         local migration_name = vim.fn.input("Nombre de la migración: ")
         if migration_name == "" then
           print("Nombre de migración inválido")
           return
         end
 
-        local cmd = string.format("cd %s && dotnet ef migrations add %s", project_dir, migration_name)
-        local output = vim.fn.system(cmd)
+        -- Comando para agregar la migración
+        local add_cmd = string.format(
+          "dotnet ef migrations add %s --project %s --startup-project %s",
+          migration_name,
+          data_project,
+          startup_project
+        )
+        -- Ejecutar el comando de migración
+        local output = vim.fn.system(add_cmd)
         if vim.v.shell_error ~= 0 then
           vim.api.nvim_err_writeln("Error al crear la migración:")
           vim.api.nvim_echo({ { output, "ErrorMsg" } }, true, {})
-        else
-          print("Migración creada exitosamente: " .. migration_name)
+          return
+        end
+        print("Migración creada exitosamente: " .. migration_name)
+
+        -- Preguntar si desea actualizar la base de datos
+        local update_db = vim.fn.input("¿Desea actualizar la base de datos? (y/N): ")
+        if update_db:lower() == "y" then
+          local update_cmd =
+            string.format("dotnet ef database update --project %s --startup-project %s", data_project, startup_project)
+          local update_output = vim.fn.system(update_cmd)
+          if vim.v.shell_error ~= 0 then
+            vim.api.nvim_err_writeln("Error al actualizar la base de datos:")
+            vim.api.nvim_echo({ { update_output, "ErrorMsg" } }, true, {})
+          else
+            print("Base de datos actualizada exitosamente")
+          end
         end
       end
 

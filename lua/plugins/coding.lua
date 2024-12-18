@@ -159,6 +159,13 @@ return {
     },
   },
   {
+    "JoosepAlviste/nvim-ts-context-commentstring",
+    lazy = true,
+    opts = {
+      enable_autocmd = false,
+    },
+  },
+  {
     "echasnovski/mini.surround",
     recommended = true,
     keys = function(_, keys)

@@ -6,119 +6,54 @@ return {
       servers = {
         tsserver = {
           enabled = false,
-          keys = {
-            { "<leader>co", "<cmd>TypescriptOrganizeImports<CR>", desc = "Organize Imports" },
-            { "<leader>cR", "<cmd>TypescriptRenameFile<CR>", desc = "Rename File" },
-          },
+        },
+        ts_ls = {
+          enabled = false,
         },
         eslint = {
           enabled = false,
         },
         volar = {
+          filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue", "json", "ts" },
           init_options = {
             vue = {
               hybridMode = true,
             },
+            typescript = {
+              tsdk = vim.fn.expand(
+                "$HOME/.local/share/nvim/mason/packages/vue-language-server/node_modules/typescript/lib"
+              ),
+            },
+            languageFeatures = {
+              implementation = true,
+              references = true,
+              definition = true,
+              typeDefinition = true,
+              callHierarchy = true,
+              hover = true,
+              rename = true,
+              renameFileRefactoring = true,
+              signatureHelp = true,
+              codeAction = true,
+              workspaceSymbol = true,
+              completion = {
+                defaultTagNameCase = "both",
+                defaultAttrNameCase = "kebabCase",
+                getDocumentNameCasesRequest = false,
+                getDocumentSelectionRequest = false,
+              },
+            },
           },
+          -- Configuración para encontrar el SDK de TypeScript
+          on_new_config = function(new_config, new_root_dir)
+            local lib_path = vim.fs.find("node_modules/typescript/lib", { path = new_root_dir, upward = true })[1]
+            if lib_path then
+              new_config.init_options.typescript.tsdk = lib_path
+            end
+          end,
         },
         vtsls = {
-          -- explicitly add default filetypes, so that we can extend
-          -- them in related extras
-          filetypes = {
-            "javascript",
-            "javascriptreact",
-            "javascript.jsx",
-            "typescript",
-            "typescriptreact",
-            "typescript.tsx",
-            "vue",
-            "ts",
-          },
-          settings = {
-            complete_function_calls = true,
-            vtsls = {
-              enableMoveToFileCodeAction = true,
-              autoUseWorkspaceTsdk = true,
-              experimental = {
-                completion = {
-                  enableServerSideFuzzyMatch = true,
-                },
-              },
-            },
-            typescript = {
-              updateImportsOnFileMove = { enabled = "always" },
-              suggest = {
-                completeFunctionCalls = true,
-                autoImports = true,
-              },
-              inlayHints = {
-                enumMemberValues = { enabled = true },
-                functionLikeReturnTypes = { enabled = true },
-                parameterNames = { enabled = "literals" },
-                parameterTypes = { enabled = true },
-                propertyDeclarationTypes = { enabled = true },
-                variableTypes = { enabled = true },
-              },
-            },
-            javascript = {
-              suggest = {
-                autoImports = true,
-              },
-              updateImportsOnFileMove = { enabled = "always" },
-            },
-          },
-          keys = {
-            {
-              "gD",
-              function()
-                local params = vim.lsp.util.make_position_params()
-                LazyVim.lsp.execute({
-                  command = "typescript.goToSourceDefinition",
-                  arguments = { params.textDocument.uri, params.position },
-                  open = true,
-                })
-              end,
-              desc = "Goto Source Definition",
-            },
-            {
-              "gR",
-              function()
-                LazyVim.lsp.execute({
-                  command = "typescript.findAllFileReferences",
-                  arguments = { vim.uri_from_bufnr(0) },
-                  open = true,
-                })
-              end,
-              desc = "File References",
-            },
-            {
-              "<leader>co",
-              LazyVim.lsp.action["source.organizeImports"],
-              desc = "Organize Imports",
-            },
-            {
-              "<leader>cM",
-              LazyVim.lsp.action["source.addMissingImports.ts"],
-              desc = "Add missing imports",
-            },
-            {
-              "<leader>cu",
-              LazyVim.lsp.action["source.removeUnused.ts"],
-              desc = "Remove unused imports",
-            },
-            {
-              "<leader>cD",
-              LazyVim.lsp.action["source.fixAll.ts"],
-              desc = "Fix all diagnostics",
-            },
-            {
-              "<leader>cV",
-              function()
-                LazyVim.lsp.execute({ command = "typescript.selectTypeScriptVersion" })
-              end,
-              desc = "Select TS workspace version",
-            },
-          },
+          enabled = false,
         },
       },
       setup = {
@@ -126,63 +61,12 @@ return {
           -- disable tsserver
           return true
         end,
-        vtsls = function(_, opts)
-          -- Configura el 'on_attach' para habilitar el hover.
-          LazyVim.lsp.on_attach(function(client, buffer)
-            client.commands["_typescript.moveToFileRefactoring"] = function(command, ctx)
-              ---@type string, string, lsp.Range
-              ---@diagnostic disable-next-line: assign-type-mismatch
-              local action, uri, range = unpack(command.arguments)
-
-              local function move(newf)
-                client.request("workspace/executeCommand", {
-                  command = command.command,
-                  arguments = { action, uri, range, newf },
-                })
-              end
-
-              ---@diagnostic disable-next-line: param-type-mismatch
-              local fname = vim.uri_to_fname(uri)
-              client.request("workspace/executeCommand", {
-                command = "typescript.tsserverRequest",
-                arguments = {
-                  "getMoveToRefactoringFileSuggestions",
-                  {
-                    file = fname,
-                    startLine = range.start.line + 1,
-                    startOffset = range.start.character + 1,
-                    endLine = range["end"].line + 1,
-                    endOffset = range["end"].character + 1,
-                  },
-                },
-              }, function(_, result)
-                ---@type string[]
-                local files = result.body.files
-                table.insert(files, 1, "Enter new path...")
-                vim.ui.select(files, {
-                  prompt = "Select move destination:",
-                  format_item = function(f)
-                    return vim.fn.fnamemodify(f, ":~:.")
-                  end,
-                }, function(f)
-                  if f and f:find("^Enter new path") then
-                    vim.ui.input({
-                      prompt = "Enter move destination:",
-                      default = vim.fn.fnamemodify(fname, ":h") .. "/",
-                      completion = "file",
-                    }, function(newf)
-                      return newf and move(newf)
-                    end)
-                  elseif f then
-                    move(f)
-                  end
-                end)
-              end)
-            end
-          end, "vtsls")
-          -- Copia la configuración de TypeScript a JavaScript
-          opts.settings.javascript =
-            vim.tbl_deep_extend("force", {}, opts.settings.typescript, opts.settings.javascript or {})
+        ts_ls = function()
+          -- disable tsserver
+          return true
+        end,
+        vtsls = function()
+          return true
         end,
       },
     },
@@ -215,15 +99,6 @@ return {
     "mfussenegger/nvim-dap",
     lazy = true,
     optional = true,
-    dependencies = {
-      {
-        "williamboman/mason.nvim",
-        opts = function(_, opts)
-          opts.ensure_installed = opts.ensure_installed or {}
-          table.insert(opts.ensure_installed, "js-debug-adapter")
-        end,
-      },
-    },
     opts = function()
       local dap = require("dap")
       if not dap.adapters["pwa-node"] then
@@ -255,7 +130,7 @@ return {
         end
       end
 
-      local js_filetypes = { "typescript", "javascript", "typescriptreact", "javascriptreact" }
+      local js_filetypes = { "typescript", "javascript", "typescriptreact", "javascriptreact", "vue" }
 
       local vscode = require("dap.ext.vscode")
       vscode.type_to_filetypes["node"] = js_filetypes

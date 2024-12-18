@@ -57,7 +57,8 @@ wk.add({
 })
 
 -- Codeium
-vim.keymap.set("n", "<leader>Cc", "<cmd>Codeium Chat<cr>", { desc = "󰈌 Codeium Chat" })
+vim.keymap.set("n", "<leader>ac", "<cmd>Codeium Chat<cr>", { desc = "󰈌 Codeium Chat" })
+vim.keymap.set("n", "<leader>aA", "<cmd>Codeium Auth<cr>", { desc = "󰈌 Codeium Auth" })
 
 -- Git Conflict
 vim.keymap.set("n", "<leader>Fo", "<cmd>GitConflictChooseOurs<cr>", { desc = " Escoger los cambios actuales" })
