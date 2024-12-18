@@ -5,7 +5,8 @@ return {
     lazy = false, -- Desactiva lazy loading para que se cargue al inicio
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = function()
-      vim.opt.laststatus = 3
+      local laststatus = vim.g.lualine_laststatus or 3
+      vim.o.laststatus = laststatus
       return {
         options = {
           theme = "gruvbox",
@@ -36,11 +37,12 @@ return {
             { "filename", path = 1 },
             {
               "diagnostics",
+              sources = { "nvim_diagnostic" },
               symbols = {
-                error = " ",
-                warn = " ",
-                info = " ",
-                hint = " ",
+                error = " ",
+                warn = " ",
+                info = " ",
+                hint = " ",
               },
             },
           },
