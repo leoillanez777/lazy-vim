@@ -6,6 +6,10 @@ return {
       servers = {
         tsserver = {
           enabled = false,
+          keys = {
+            { "<leader>co", "<cmd>TypescriptOrganizeImports<CR>", desc = "Organize Imports" },
+            { "<leader>cR", "<cmd>TypescriptRenameFile<CR>", desc = "Rename File" },
+          },
         },
         eslint = {
           enabled = false,
@@ -127,6 +131,7 @@ return {
           LazyVim.lsp.on_attach(function(client, buffer)
             client.commands["_typescript.moveToFileRefactoring"] = function(command, ctx)
               ---@type string, string, lsp.Range
+              ---@diagnostic disable-next-line: assign-type-mismatch
               local action, uri, range = unpack(command.arguments)
 
               local function move(newf)
@@ -136,6 +141,7 @@ return {
                 })
               end
 
+              ---@diagnostic disable-next-line: param-type-mismatch
               local fname = vim.uri_to_fname(uri)
               client.request("workspace/executeCommand", {
                 command = "typescript.tsserverRequest",
@@ -279,48 +285,7 @@ return {
   },
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = { ensure_installed = { "vue", "typescript", "javascript" } },
-  },
-  {
-    "hrsh7th/nvim-cmp",
-    lazy = true,
-    dependencies = {
-      "hrsh7th/cmp-nvim-lsp",
-      "L3MON4D3/LuaSnip",
-    },
-    opts = function(_, opts)
-      local cmp = require("cmp")
-      opts.sources = opts.sources or {}
-      table.insert(opts.sources, { name = "nvim_lsp" })
-      opts.snippet = {
-        expand = function(args)
-          require("luasnip").lsp_expand(args.body)
-        end,
-      }
-      opts.mapping = cmp.mapping.preset.insert({
-        ["<C-d>"] = cmp.mapping.scroll_docs(-4),
-        ["<C-f>"] = cmp.mapping.scroll_docs(4),
-        ["<C-Space>"] = cmp.mapping.complete(),
-        ["<CR>"] = cmp.mapping.confirm({
-          behavior = cmp.ConfirmBehavior.Replace,
-          select = true,
-        }),
-        ["<Tab>"] = cmp.mapping(function(fallback)
-          if cmp.visible() then
-            cmp.select_next_item()
-          else
-            fallback()
-          end
-        end, { "i", "s" }),
-        ["<S-Tab>"] = cmp.mapping(function(fallback)
-          if cmp.visible() then
-            cmp.select_prev_item()
-          else
-            fallback()
-          end
-        end, { "i", "s" }),
-      })
-    end,
+    opts = { ensure_installed = { "vue", "typescript", "javascript", "css" } },
   },
   {
     "nvim-lua/plenary.nvim",
