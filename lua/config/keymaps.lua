@@ -45,15 +45,10 @@ vim.api.nvim_create_autocmd("FileType", {
 -- Agregar comando GitConflictListQF al menú de Git bajo <leader>g
 local wk = require("which-key")
 wk.add({
-  { "<leader>g", group = "git" },
   { "<leader>F", group = " Conflictos", icon = "" },
   { "<leader>d", group = "Debbuger", icon = "" },
-  { "<leader>C", group = "Codeium", icon = {
-    icon = "",
-    color = "azure",
-  } },
   { "<leader>cf", group = "Format", icon = "" },
-  { "<leader>a", group = "Avante", icon = "󰧑" },
+  { "<leader>a", group = "Avante", icon = "" },
 })
 
 -- Codeium
@@ -72,6 +67,7 @@ vim.keymap.set("n", "<leader>Fa", "<cmd>Gwrite<cr>", { desc = " Grabar Cambio
 
 -- Agregar una opción para ejecutar :LspRestart con <leader>x -> r, con icono de reinicio 
 vim.keymap.set("n", "<leader>xr", "<cmd>LspRestart<cr>", { desc = " Reiniciar LSP" })
+vim.keymap.set("n", "<leader>xR", "<cmd>edit ~/.local/state/nvim/lsp.log<cr>", { desc = "Ver log LSP" })
 
 -- Format commands
 vim.keymap.set("n", "<leader>cfd", vim.lsp.buf.format, { desc = "Format Document" })

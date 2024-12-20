@@ -9,12 +9,8 @@ return {
       servers = {
         --- @deprecated -- tsserver renamed to ts_ls but not yet released, so keep this for now
         --- the proper approach is to check the nvim-lspconfig release version when it's released to determine the server name dynamically
-        tsserver = {
-          enabled = false,
-        },
-        ts_ls = {
-          enabled = false,
-        },
+        tsserver = { enabled = false },
+        ts_ls = { enabled = false },
         vtsls = {
           -- explicitly add default filetypes, so that we can extend
           -- them in related extras
@@ -26,6 +22,7 @@ return {
             "typescriptreact",
             "typescript.tsx",
           },
+          root_dir = require("lspconfig").util.root_pattern("tsconfig.json"),
           settings = {
             complete_function_calls = true,
             vtsls = {
@@ -53,6 +50,17 @@ return {
               },
             },
           },
+          on_init = function(client)
+            -- Asegurar que TypeScript esté disponible
+            local tslib = vim.fn.expand(
+              "$HOME/.local/share/nvim/mason/packages/typescript-language-server/node_modules/typescript/lib"
+            )
+            if vim.fn.isdirectory(tslib) == 1 then
+              client.config.init_options = client.config.init_options or {}
+              client.config.init_options.typescript = client.config.init_options.typescript or {}
+              client.config.init_options.typescript.tsdk = tslib
+            end
+          end,
           keys = {
             {
               "gD",
