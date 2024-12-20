@@ -32,6 +32,15 @@ return {
               trace = {
                 server = "verbose",
               },
+              -- Añadir configuraciones para retrocompatibilidad
+              experimental = {
+                enableIvy = false, -- Desactivar Ivy para Angular 11
+                useCommonModule = true, -- Forzar uso de CommonModule
+              },
+              compiler = {
+                strictTemplates = false, -- Desactivar templates estrictos para mayor compatibilidad
+                enableResourceInlining = false,
+              },
               featureFlags = {
                 completions = true,
                 diagnostics = {
@@ -49,19 +58,70 @@ return {
                 references = true,
                 implementationCodeLens = true,
               },
+              -- Reducir nivel de diagnóstico para suprimir algunos errores
+              diagnostics = {
+                enableWithoutWorkspace = false,
+                level = "warning",
+              },
               preferences = {
                 includeCompletionsWithSnippetText = true,
                 includeAutomaticOptionalChainCompletions = true,
                 quotePreference = "single",
                 importModuleSpecifierPreference = "relative",
               },
-              compiler = {
-                -- Mejorar el análisis de templates
-                strictTemplates = true,
-                enableResourceInlining = true,
-              },
             },
           },
+          on_new_config = function(new_config, new_root_dir)
+            -- Definir la ruta base de Mason
+            local mason_path = vim.fn.expand("$HOME/.local/share/nvim/mason/packages/angular-language-server")
+
+            -- Rutas para TypeScript y Angular
+            local path_ts = mason_path .. "/node_modules/typescript/lib"
+            local path_ng = mason_path .. "/node_modules/@angular/language-server"
+            local ngserver_path = mason_path .. "/node_modules/@angular/language-server/bin/ngserver"
+
+            -- Verificar si las rutas existen
+            if vim.fn.executable(ngserver_path) == 1 then
+              new_config.cmd = {
+                ngserver_path,
+                "--stdio",
+                "--tsProbeLocations",
+                path_ts,
+                "--ngProbeLocations",
+                path_ng,
+              }
+            else
+              -- Intentar usar el comando global si no se encuentra en Mason
+              new_config.cmd = {
+                "ngserver",
+                "--stdio",
+                "--tsProbeLocations",
+                path_ts,
+                "--ngProbeLocations",
+                path_ng,
+              }
+
+              -- Notificar al usuario si no se encuentra ngserver
+              if vim.fn.executable("ngserver") == 0 then
+                vim.notify(
+                  "ngserver no encontrado. Asegúrate de tener @angular/language-server instalado globalmente o en Mason",
+                  vim.log.levels.WARN
+                )
+              end
+            end
+
+            -- -- Buscar tsconfig.json en el directorio del proyecto
+            -- local tsconfig = vim.fs.find("tsconfig.json", {
+            --   upward = true,
+            --   path = new_root_dir,
+            -- })[1]
+            --
+            -- if tsconfig then
+            --   -- Añadir la ubicación del tsconfig si existe
+            --   table.insert(new_config.cmd, "--tsconfig")
+            --   table.insert(new_config.cmd, tsconfig)
+            -- end
+          end,
         },
       },
       setup = {
@@ -83,37 +143,10 @@ return {
             --HACK: disable angular renaming capability due to duplicate rename popping up
             client.server_capabilities.renameProvider = false
 
-            -- Configurar keymaps específicos de Angular
-            local map = function(mode, lhs, rhs, desc)
-              vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
-            end
-
-            -- Navegación
-            map("n", "gd", vim.lsp.buf.definition, "Ir a definición")
-            map("n", "gr", vim.lsp.buf.references, "Mostrar referencias")
-            map("n", "gi", vim.lsp.buf.implementation, "Ir a implementación")
-            map("n", "gt", vim.lsp.buf.type_definition, "Ir a definición de tipo")
-
-            -- Acciones de código
-            map("n", "<leader>ca", vim.lsp.buf.code_action, "Acciones de código")
-            map("n", "<leader>cr", vim.lsp.buf.rename, "Renombrar")
-            map("n", "<leader>cf", function()
-              vim.lsp.buf.format({ async = true })
-            end, "Formatear documento")
-
-            -- Información
-            map("n", "K", vim.lsp.buf.hover, "Mostrar documentación")
-            map("n", "<C-k>", vim.lsp.buf.signature_help, "Mostrar firma")
-
-            -- Diagnósticos
-            map("n", "<leader>cd", vim.diagnostic.open_float, "Mostrar diagnóstico")
-            map("n", "[d", vim.diagnostic.goto_prev, "Diagnóstico anterior")
-            map("n", "]d", vim.diagnostic.goto_next, "Siguiente diagnóstico")
-
-            -- Características específicas de Angular
-            map("n", "<leader>aT", "<cmd>Angular.GoToTemplateForComponent<CR>", "Ir a template")
-            map("n", "<leader>aC", "<cmd>Angular.GoToComponentFromTemplate<CR>", "Ir a componente")
-            map("n", "<leader>aS", "<cmd>Angular.SwitchTemplateOrComponent<CR>", "Cambiar entre template/componente")
+            local opts = { buffer = bufnr }
+            vim.keymap.set("n", "gd", function()
+              require("telescope.builtin").lsp_definitions({ reuse_win = true })
+            end, vim.tbl_extend("force", opts, { desc = "Goto Definition" }))
           end, "angularls")
         end,
       },

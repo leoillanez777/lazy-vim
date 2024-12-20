@@ -48,6 +48,7 @@ return {
     opts = {
       servers = {
         tsserver = { enabled = false },
+        vtsls = { enabled = false },
         volar = {
           filetypes = { "vue" },
           root_dir = require("lspconfig.util").root_pattern("vue.config.js", "vite.config.js", "nuxt.config.js"),
@@ -87,7 +88,6 @@ return {
             end
           end,
         },
-        vtsls = {},
       },
     },
   },
