@@ -24,21 +24,16 @@ return {
     ---@type blink.cmp.Config
     opts = {
       snippets = {
-        expand = function(snippet, _)
+        expand = function(snippet)
           return LazyVim.cmp.expand(snippet)
         end,
       },
       appearance = {
-        -- useful for when your theme doesn't support blink.cmp
-        -- will be removed in a future release, assuming themes add support
         use_nvim_cmp_as_default = false,
-        -- set to 'mono' for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
-        -- adjusts spacing to ensure icons are aligned
         nerd_font_variant = "mono",
       },
       completion = {
         accept = {
-          -- experimental auto-brackets support
           auto_brackets = {
             enabled = true,
           },
@@ -56,13 +51,15 @@ return {
           enabled = vim.g.ai_cmp,
         },
       },
-
-      -- experimental signature help support
-      -- signature = { enabled = true },
-
       sources = {
         compat = {},
         default = { "lsp", "path", "snippets", "buffer" },
+        providers = {
+          lsp = {
+            name = "LSP",
+            module = "blink.cmp.sources.lsp",
+          },
+        },
         cmdline = {},
       },
 
@@ -99,17 +96,6 @@ return {
             LazyVim.cmp.map({ "snippet_forward", "ai_accept" }),
             "fallback",
           }
-        end
-      end
-
-      ---  NOTE: compat with latest version. Currenlty 0.7.6
-      if not vim.g.lazyvim_blink_main then
-        ---@diagnostic disable-next-line: inject-field
-        opts.sources.completion = opts.sources.completion or {}
-        opts.sources.completion.enabled_providers = enabled
-        if vim.tbl_get(opts, "completion", "menu", "draw", "treesitter") then
-          ---@diagnostic disable-next-line: assign-type-mismatch
-          opts.completion.menu.draw.treesitter = true
         end
       end
 

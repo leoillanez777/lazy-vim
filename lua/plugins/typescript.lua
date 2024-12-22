@@ -3,193 +3,19 @@ return {
     "nvim-lua/plenary.nvim",
   },
   {
-    "neovim/nvim-lspconfig",
-    opts = {
-      -- make sure mason installs the server
-      servers = {
-        --- @deprecated -- tsserver renamed to ts_ls but not yet released, so keep this for now
-        --- the proper approach is to check the nvim-lspconfig release version when it's released to determine the server name dynamically
-        tsserver = { enabled = false },
-        ts_ls = { enabled = false },
-        vtsls = {
-          -- explicitly add default filetypes, so that we can extend
-          -- them in related extras
-          filetypes = {
-            "javascript",
-            "javascriptreact",
-            "javascript.jsx",
-            "typescript",
-            "typescriptreact",
-            "typescript.tsx",
-          },
-          root_dir = require("lspconfig").util.root_pattern("tsconfig.json"),
-          settings = {
-            complete_function_calls = true,
-            vtsls = {
-              enableMoveToFileCodeAction = true,
-              autoUseWorkspaceTsdk = true,
-              experimental = {
-                maxInlayHintLength = 30,
-                completion = {
-                  enableServerSideFuzzyMatch = true,
-                },
-              },
-            },
-            typescript = {
-              updateImportsOnFileMove = { enabled = "always" },
-              suggest = {
-                completeFunctionCalls = true,
-              },
-              inlayHints = {
-                enumMemberValues = { enabled = true },
-                functionLikeReturnTypes = { enabled = true },
-                parameterNames = { enabled = "literals" },
-                parameterTypes = { enabled = true },
-                propertyDeclarationTypes = { enabled = true },
-                variableTypes = { enabled = false },
-              },
-            },
-          },
-          on_init = function(client)
-            -- Asegurar que TypeScript esté disponible
-            local tslib = vim.fn.expand(
-              "$HOME/.local/share/nvim/mason/packages/typescript-language-server/node_modules/typescript/lib"
-            )
-            if vim.fn.isdirectory(tslib) == 1 then
-              client.config.init_options = client.config.init_options or {}
-              client.config.init_options.typescript = client.config.init_options.typescript or {}
-              client.config.init_options.typescript.tsdk = tslib
-            end
-          end,
-          keys = {
-            {
-              "gD",
-              function()
-                local params = vim.lsp.util.make_position_params()
-                LazyVim.lsp.execute({
-                  command = "typescript.goToSourceDefinition",
-                  arguments = { params.textDocument.uri, params.position },
-                  open = true,
-                })
-              end,
-              desc = "Goto Source Definition",
-            },
-            {
-              "gR",
-              function()
-                LazyVim.lsp.execute({
-                  command = "typescript.findAllFileReferences",
-                  arguments = { vim.uri_from_bufnr(0) },
-                  open = true,
-                })
-              end,
-              desc = "File References",
-            },
-            {
-              "<leader>co",
-              LazyVim.lsp.action["source.organizeImports"],
-              desc = "Organize Imports",
-            },
-            {
-              "<leader>cM",
-              LazyVim.lsp.action["source.addMissingImports.ts"],
-              desc = "Add missing imports",
-            },
-            {
-              "<leader>cu",
-              LazyVim.lsp.action["source.removeUnused.ts"],
-              desc = "Remove unused imports",
-            },
-            {
-              "<leader>cD",
-              LazyVim.lsp.action["source.fixAll.ts"],
-              desc = "Fix all diagnostics",
-            },
-            {
-              "<leader>cV",
-              function()
-                LazyVim.lsp.execute({ command = "typescript.selectTypeScriptVersion" })
-              end,
-              desc = "Select TS workspace version",
-            },
-          },
-        },
-      },
-      setup = {
-        --- @deprecated -- tsserver renamed to ts_ls but not yet released, so keep this for now
-        --- the proper approach is to check the nvim-lspconfig release version when it's released to determine the server name dynamically
-        tsserver = function()
-          -- disable tsserver
-          return true
-        end,
-        ts_ls = function()
-          -- disable tsserver
-          return true
-        end,
-        vtsls = function(_, opts)
-          LazyVim.lsp.on_attach(function(client, buffer)
-            client.commands["_typescript.moveToFileRefactoring"] = function(command, ctx)
-              ---@type string, string, lsp.Range
-              local action, uri, range = unpack(command.arguments)
-
-              local function move(newf)
-                client.request("workspace/executeCommand", {
-                  command = command.command,
-                  arguments = { action, uri, range, newf },
-                })
-              end
-
-              local fname = vim.uri_to_fname(uri)
-              client.request("workspace/executeCommand", {
-                command = "typescript.tsserverRequest",
-                arguments = {
-                  "getMoveToRefactoringFileSuggestions",
-                  {
-                    file = fname,
-                    startLine = range.start.line + 1,
-                    startOffset = range.start.character + 1,
-                    endLine = range["end"].line + 1,
-                    endOffset = range["end"].character + 1,
-                  },
-                },
-              }, function(_, result)
-                ---@type string[]
-                local files = result.body.files
-                table.insert(files, 1, "Enter new path...")
-                vim.ui.select(files, {
-                  prompt = "Select move destination:",
-                  format_item = function(f)
-                    return vim.fn.fnamemodify(f, ":~:.")
-                  end,
-                }, function(f)
-                  if f and f:find("^Enter new path") then
-                    vim.ui.input({
-                      prompt = "Enter move destination:",
-                      default = vim.fn.fnamemodify(fname, ":h") .. "/",
-                      completion = "file",
-                    }, function(newf)
-                      return newf and move(newf)
-                    end)
-                  elseif f then
-                    move(f)
-                  end
-                end)
-              end)
-            end
-          end, "vtsls")
-          -- copy typescript settings to javascript
-          opts.settings.javascript =
-            vim.tbl_deep_extend("force", {}, opts.settings.typescript, opts.settings.javascript or {})
-        end,
-      },
-    },
-  },
-  {
     "williamboman/mason.nvim",
     opts = function(_, opts)
       opts.ensure_installed = opts.ensure_installed or {}
-      table.insert(opts.ensure_installed, "js-debug-adapter")
-      table.insert(opts.ensure_installed, "vtsls")
+      vim.list_extend(opts.ensure_installed, {
+        "vue-language-server",
+        "angular-language-server",
+        "typescript-language-server",
+        "prettier",
+        "eslint_d",
+        "js-debug-adapter",
+        "html-lsp",
+        "css-lsp",
+      })
     end,
   },
   {
@@ -206,6 +32,56 @@ return {
         ["tsconfig.build.json"] = { glyph = "", hl = "MiniIconsAzure" },
         ["yarn.lock"] = { glyph = "", hl = "MiniIconsBlue" },
         ["%.ts"] = { glyph = "", hl = "MiniIconsBlue" },
+      },
+    },
+  },
+  {
+    "neovim/nvim-lspconfig",
+    event = "LazyFile",
+    dependencies = {
+      "mason.nvim",
+      { "williamboman/mason-lspconfig.nvim", config = function() end },
+    },
+    opts = {
+      diagnostics = {
+        underline = true,
+        update_in_insert = false,
+        virtual_text = {
+          spacing = 4,
+          source = "if_many",
+          prefix = "●",
+        },
+        severity_sort = true,
+        signs = {
+          text = {
+            [vim.diagnostic.severity.ERROR] = LazyVim.config.icons.diagnostics.Error,
+            [vim.diagnostic.severity.WARN] = LazyVim.config.icons.diagnostics.Warn,
+            [vim.diagnostic.severity.HINT] = LazyVim.config.icons.diagnostics.Hint,
+            [vim.diagnostic.severity.INFO] = LazyVim.config.icons.diagnostics.Info,
+          },
+        },
+        inlay_hints = {
+          enabled = true,
+          exclude = { "vue" }, -- filetypes for which you don't want to enable inlay hints
+        },
+      },
+      servers = {
+        -- Desactivar tsserver por defecto ya que usaremos vtsls
+        tsserver = { enabled = false },
+        html = {
+          filetypes = { "html" },
+          init_options = {
+            configurationSection = { "html", "css", "javascript" },
+            embeddedLanguages = {
+              css = true,
+              javascript = true,
+            },
+            provideFormatter = true,
+          },
+        },
+        cssls = {
+          filetypes = { "css", "scss" },
+        },
       },
     },
   },
@@ -271,5 +147,43 @@ return {
         end
       end
     end,
+  },
+  {
+    "nvim-treesitter/nvim-treesitter",
+    keys = {
+      { "<c-space>", desc = "Increment Selection" },
+      { "<bs>", desc = "Decrement Selection", mode = "x" },
+    },
+    opts = function(_, opts)
+      if type(opts.ensure_installed) == "table" then
+        vim.list_extend(opts.ensure_installed, {
+          "vue",
+          "typescript",
+          "javascript",
+          "html",
+          "css",
+          "scss",
+          "json",
+          "lua",
+          "markdown",
+          "query",
+          "yaml",
+        })
+      end
+    end,
+  },
+  {
+    "stevearc/conform.nvim",
+    opts = {
+      formatters_by_ft = {
+        vue = { "prettier" },
+        typescript = { "prettier" },
+        javascript = { "prettier" },
+        html = { "prettier" },
+        htmlangular = { "prettier" },
+        css = { "prettier" },
+        scss = { "prettier" },
+      },
+    },
   },
 }
