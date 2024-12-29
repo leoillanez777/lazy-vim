@@ -1,4 +1,14 @@
+-- stylua: ignore
+-- if true then return {} end
+
 return {
+  {
+    "nvim-lua/plenary.nvim",
+  },
+  {
+    "nvim-treesitter/nvim-treesitter",
+    opts = { ensure_installed = { "vue", "css" } },
+  },
   {
     "williamboman/mason-lspconfig.nvim",
     opts = function(_, opts)
@@ -14,16 +24,9 @@ return {
     },
     opts = {
       servers = {
-        tsserver = { enabled = false },
-        vtsls = { enabled = false },
         volar = {
-          --filetypes = { "vue" },
-          -- Agregar HTML y otros tipos de archivo que quieras que maneje Volar
           filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue", "json" },
           root_dir = require("lspconfig.util").root_pattern("vue.config.js", "vite.config.js", "nuxt.config.js"),
-          autostart = function(bufnr)
-            return not _G.is_angular_project(bufnr) -- Previene que Volar inicie en proyectos Angular
-          end,
           init_options = {
             typescript = {
               tsdk = vim.fn.expand(
@@ -33,35 +36,6 @@ return {
             vue = {
               hybridMode = false,
             },
-            languageFeatures = {
-              implementation = true,
-              references = true,
-              definition = true,
-              typeDefinition = true,
-              callHierarchy = true,
-              hover = true,
-              rename = true,
-              renameFileRefactoring = true,
-              signatureHelp = true,
-              codeAction = true,
-              workspaceSymbol = true,
-              diagnostics = true,
-              semanticTokens = true,
-              completion = {
-                defaultTagNameCase = "both",
-                defaultAttrNameCase = "kebabCase",
-              },
-            },
-            documentFeatures = {
-              selectionRange = true,
-              foldingRange = true,
-              linkedEditingRange = true,
-              documentSymbol = true,
-              documentColor = true,
-              documentFormatting = {
-                defaultPrintWidth = 100,
-              },
-            },
           },
           on_new_config = function(new_config, new_root_dir)
             local lib_path = vim.fs.find("node_modules/typescript/lib", { path = new_root_dir, upward = true })[1]
@@ -70,17 +44,19 @@ return {
             end
           end,
         },
-        html = {
-          filetypes = { "html" },
-          init_options = {
-            configurationSection = { "html", "css", "javascript" },
-            embeddedLanguages = {
-              css = true,
-              javascript = true,
-            },
-          },
-        },
       },
+      vtsls = {}
     },
   },
+  {
+  "stevearc/conform.nvim",
+  opts = {
+    formatters_by_ft = {
+      vue = { "prettier" },
+      css = { "prettier" },
+      scss = { "prettier" },
+      javascript = { "prettier" },
+    },
+  },
+}
 }

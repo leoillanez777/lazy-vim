@@ -1,63 +1,48 @@
 return {
-  { "folke/snacks.nvim", opts = { dashboard = { enabled = false } } },
-  {
-    "nvimdev/dashboard-nvim",
-    lazy = false,
-    config = function()
-      require("dashboard").setup({
-        theme = "hyper",
-        config = {
-          week_header = {
-            enable = true,
-            concat = "Leonardo Illanez",
-          },
-          shortcut = {
-            { desc = "󰊳 Update", group = "@property", action = "Lazy update", key = "u" },
-            {
-              icon = " ",
-              icon_hl = "@variable",
-              desc = "Files",
-              group = "Label",
-              action = "Telescope find_files",
-              key = "f",
-            },
-            {
-              icon = "󰋗 ",
-              desc = "Help",
-              group = "DiagnosticHint",
-              action = "Telescope help_tags",
-              key = "h",
-            },
-            {
-              icon = " ",
-              desc = "Mason",
-              group = "Number",
-              action = "Mason",
-              key = "m",
-            },
-          },
-          packages = { enable = true },
-          project = {
-            enable = true,
-            limit = 8,
-            icon = " ",
-            label = "Projects",
-            action = "Telescope find_files cwd=",
-          },
-          mru = {
-            enable = true,
-            limit = 8,
-            icon = " ",
-            label = "Recent Files",
-          },
-          footer = {
-            " ",
-            " Github: https://github.com/LeonardoIllanez",
-            "Made with  by Leonardo Illanez",
-          },
+  "folke/snacks.nvim",
+  opts = {
+    dashboard = {
+      preset = {
+        header = [[
+ ██▓    ▓█████  ▒█████   ███▄    █  ▄▄▄       ██▀███  ▓█████▄  ▒█████  
+▓██▒    ▓█   ▀ ▒██▒  ██▒ ██ ▀█   █ ▒████▄    ▓██ ▒ ██▒▒██▀ ██▌▒██▒  ██▒
+▒██░    ▒███   ▒██░  ██▒▓██  ▀█ ██▒▒██  ▀█▄  ▓██ ░▄█ ▒░██   █▌▒██░  ██▒
+▒██░    ▒▓█  ▄ ▒██   ██░▓██▒  ▐▌██▒░██▄▄▄▄██ ▒██▀▀█▄  ░▓█▄   ▌▒██   ██░
+░██████▒░▒████▒░ ████▓▒░▒██░   ▓██░ ▓█   ▓██▒░██▓ ▒██▒░▒████▓ ░ ████▓▒░
+░ ▒░▓  ░░░ ▒░ ░░ ▒░▒░▒░ ░ ▒░   ▒ ▒  ▒▒   ▓▒█░░ ▒▓ ░▒▓░ ▒▒▓  ▒ ░ ▒░▒░▒░ 
+░ ░ ▒  ░ ░ ░  ░  ░ ▒ ▒░ ░ ░░   ░ ▒░  ▒   ▒▒ ░  ░▒ ░ ▒░ ░ ▒  ▒   ░ ▒ ▒░ 
+  ░ ░      ░   ░ ░ ░ ▒     ░   ░ ░   ░   ▒     ░░   ░  ░ ░  ░ ░ ░ ░ ▒  
+    ░  ░   ░  ░    ░ ░           ░       ░  ░   ░        ░        ░ ░  
+                                                       ░                       ]],
+      },
+      sections = {
+        { section = "header" },
+        {
+          pane = 2,
+          section = "terminal",
+          cmd = "colorscript -e thebat3",
+          height = 10,
+          padding = 1,
         },
-      })
-    end,
-    dependencies = { "nvim-tree/nvim-web-devicons", "nvim-telescope/telescope.nvim" },
+        { section = "keys", gap = 1, padding = 1 },
+        { pane = 2, icon = " ", title = "Recent Files", section = "recent_files", indent = 2, padding = 1 },
+        { pane = 2, icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
+        {
+          pane = 2,
+          icon = " ",
+          title = "Git Status",
+          section = "terminal",
+          enabled = function()
+            return Snacks.git.get_root() ~= nil
+          end,
+          cmd = "git status --short --branch --renames",
+          height = 5,
+          padding = 1,
+          ttl = 5 * 60,
+          indent = 3,
+        },
+        { section = "startup" },
+      },
+    },
   },
 }

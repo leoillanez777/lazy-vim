@@ -120,7 +120,7 @@ return {
       end
 
       -- Función para seleccionar proyectos
-      local function select_projects(csproj_files)
+      local function select_projects(_)
         -- Proyecto principal por defecto
         local startup_project = vim.fn.input("Proyecto de inicio (--startup-project): ", "", "file")
         if startup_project == "" then
