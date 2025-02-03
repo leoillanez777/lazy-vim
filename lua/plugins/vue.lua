@@ -7,7 +7,7 @@ return {
   },
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = { ensure_installed = { "vue", "css" } },
+    opts = { ensure_installed = { "vue", "typescript", "javascript", "tsx", "css", "scss" } },
   },
   {
     "williamboman/mason-lspconfig.nvim",
@@ -26,26 +26,51 @@ return {
       servers = {
         volar = {
           filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue", "json" },
-          root_dir = require("lspconfig.util").root_pattern("vue.config.js", "vite.config.js", "nuxt.config.js"),
+          root_dir = function(fname)
+            local util = require("lspconfig.util")
+            return util.root_pattern("vite.config.ts", "tsconfig.json")(fname)
+          end,
           init_options = {
             typescript = {
               tsdk = vim.fn.expand(
                 "$HOME/.local/share/nvim/mason/packages/vue-language-server/node_modules/typescript/lib"
               ),
             },
+            languageFeatures = {
+              implementation = true,
+              references = true,
+              definition = true,
+              typeDefinition = true,
+              callHierarchy = true,
+              hover = true,
+              rename = true,
+              renameFileRefactoring = true,
+              signatureHelp = true,
+              codeAction = true,
+              diagnostics = true,
+              semanticTokens = true,
+            },
             vue = {
               hybridMode = false,
             },
           },
           on_new_config = function(new_config, new_root_dir)
-            local lib_path = vim.fs.find("node_modules/typescript/lib", { path = new_root_dir, upward = true })[1]
+            local lib_path = vim.fs.find("node_modules/typescript/lib", {
+              path = new_root_dir,
+              upward = true,
+              type = "directory"
+            })[1]
             if lib_path then
               new_config.init_options.typescript.tsdk = lib_path
             end
           end,
         },
+        vtsls = {},
+        -- Desactivar ts_ls para evitar conflictos con Volar
+        ts_ls = {
+          enabled = false,
+        },
       },
-      vtsls = {}
     },
   },
   {
@@ -53,6 +78,7 @@ return {
   opts = {
     formatters_by_ft = {
       vue = { "prettier" },
+      typescript = { "prettier" },
       css = { "prettier" },
       scss = { "prettier" },
       javascript = { "prettier" },

@@ -10,6 +10,7 @@ return {
         "vue-language-server",
         "prettier",
         "eslint_d",
+        "typescript-language-server",
         "angular-language-server",
       })
     end,

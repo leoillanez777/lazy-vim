@@ -41,7 +41,11 @@ return {
     "williamboman/mason.nvim",
     opts = function(_, opts)
       opts.ensure_installed = opts.ensure_installed or {}
-      vim.list_extend(opts.ensure_installed, { "angular-language-server" })
+      vim.list_extend(opts.ensure_installed, {
+        "angular-language-server",
+        "prettier",
+        "css-lsp",
+      })
     end,
   },
   {
@@ -50,6 +54,8 @@ return {
       if LazyVim.has_extra("formatting.prettier") then
         opts.formatters_by_ft = opts.formatters_by_ft or {}
         opts.formatters_by_ft.htmlangular = { "prettier" }
+        opts.formatters_by_ft.scss = { "prettier", "prettierd" }
+        opts.formatters_by_ft.css = { "prettier", "prettierd" }
       end
     end,
   },
