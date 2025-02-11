@@ -6,6 +6,14 @@ return {
   opts = {
     -- add any opts here
     provider = "openai",
+    openai = {
+      endpoint = "http://localhost:11434/v1/",
+      model = "llama3.1:8b-instruct-q8_0",
+      timeout = 60000,
+      temperature = 0,
+      max_tokens = 4096,
+      disable_tools = true,
+    },
   },
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
   build = "make",

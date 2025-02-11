@@ -28,7 +28,7 @@ return {
           filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue", "json" },
           root_dir = function(fname)
             local util = require("lspconfig.util")
-            return util.root_pattern("vite.config.ts", "tsconfig.json")(fname)
+            return util.root_pattern("vite.config.ts", "vue.config.ts")(fname)
           end,
           init_options = {
             typescript = {
