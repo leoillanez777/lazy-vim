@@ -12,8 +12,10 @@ return {
   {
     "williamboman/mason-lspconfig.nvim",
     opts = function(_, opts)
-      opts.ensure_installed = opts.ensure_installed or {}
-      table.insert(opts.ensure_installed, "volar")
+      if vim.g.is_vue_project then
+        opts.ensure_installed = opts.ensure_installed or {}
+        table.insert(opts.ensure_installed, "volar")
+      end
     end,
   },
   {
@@ -22,9 +24,11 @@ return {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
     },
-    opts = {
-      servers = {
-        volar = {
+    opts = function(_, opts)
+      -- Solo configuramos volar si estamos en un proyecto Vue
+      if vim.g.is_vue_project then
+        opts.servers = opts.servers or {}
+        opts.servers.volar = {
           filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue", "json" },
           root_dir = function(fname)
             local util = require("lspconfig.util")
@@ -64,25 +68,24 @@ return {
               new_config.init_options.typescript.tsdk = lib_path
             end
           end,
-        },
-        vtsls = {},
-        -- Desactivar ts_ls para evitar conflictos con Volar
-        ts_ls = {
-          enabled = false,
-        },
-      },
-    },
+        }
+        opts.servers.tsserver = {
+          enabled = not vim.g.is_vue_project
+        }
+        opts.servers.vtsls = {}
+      end
+    end,
   },
   {
-  "stevearc/conform.nvim",
-  opts = {
-    formatters_by_ft = {
-      vue = { "prettier" },
-      typescript = { "prettier" },
-      css = { "prettier" },
-      scss = { "prettier" },
-      javascript = { "prettier" },
-    },
-  },
-}
+    "stevearc/conform.nvim",
+    opts = function(_, opts)
+      -- Solo añadir formatters Vue si estamos en un proyecto Vue
+      if vim.g.is_vue_project then
+        opts.formatters_by_ft = opts.formatters_by_ft or {}
+        opts.formatters_by_ft.vue = { "prettier" }
+        opts.formatters_by_ft.typescript = { "prettier" }
+        opts.formatters_by_ft.javascript = { "prettier" }
+      end
+    end,
+  }
 }

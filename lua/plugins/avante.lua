@@ -14,6 +14,17 @@ return {
       max_tokens = 4096,
       disable_tools = true,
     },
+    chat = {
+      open_chat_on_startup = false,
+      open_floating_window = true,
+      window_width = 0.8, -- 80% de la pantalla
+      window_height = 0.8, -- 80% de la pantalla
+    },
+    keymaps = {
+      toggle = "<leader>ai", -- Tecla para abrir/cerrar Avante
+      exec_line = "<leader>al", -- Ejecutar la línea actual
+      exec_selection = "<leader>as", -- Ejecutar selección
+    },
   },
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
   build = "make",

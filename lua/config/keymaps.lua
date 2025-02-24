@@ -3,24 +3,35 @@
 -- Add any additional keymaps here
 local function insert_accent(char)
   return function()
-    vim.api.nvim_input(char)
+    vim.api.nvim_put({ char }, "", false, true)
+    -- vim.api.nvim_input(char)
   end
 end
 
 local map = LazyVim.safe_keymap_set
 
-map("i", "]a", insert_accent("á"), { desc = "Insertar á" })
-map("i", "]e", insert_accent("é"), { desc = "Insertar é" })
-map("i", "]i", insert_accent("í"), { desc = "Insertar í" })
-map("i", "]o", insert_accent("ó"), { desc = "Insertar ó" })
-map("i", "]u", insert_accent("ú"), { desc = "Insertar ú" })
-map("i", "]n", insert_accent("ñ"), { desc = "Insertar ñ" })
-map("i", "]A", insert_accent("Á"), { desc = "Insertar Á" })
-map("i", "]E", insert_accent("É"), { desc = "Insertar É" })
-map("i", "]I", insert_accent("Í"), { desc = "Insertar Í" })
-map("i", "]O", insert_accent("Ó"), { desc = "Insertar Ó" })
-map("i", "]U", insert_accent("Ú"), { desc = "Insertar Ú" })
-map("i", "]N", insert_accent("Ñ"), { desc = "Insertar Ñ" })
+-- Caracteres especiales para español
+local spanish_chars = {
+  -- Minúsculas
+  { key = "]a", char = "á", desc = "Insertar á" },
+  { key = "]e", char = "é", desc = "Insertar é" },
+  { key = "]i", char = "í", desc = "Insertar í" },
+  { key = "]o", char = "ó", desc = "Insertar ó" },
+  { key = "]u", char = "ú", desc = "Insertar ú" },
+  { key = "]n", char = "ñ", desc = "Insertar ñ" },
+  -- Mayúsculas
+  { key = "]A", char = "Á", desc = "Insertar Á" },
+  { key = "]E", char = "É", desc = "Insertar É" },
+  { key = "]I", char = "Í", desc = "Insertar Í" },
+  { key = "]O", char = "Ó", desc = "Insertar Ó" },
+  { key = "]U", char = "Ú", desc = "Insertar Ú" },
+  { key = "]N", char = "Ñ", desc = "Insertar Ñ" },
+}
+
+-- Registrar todos los keymaps para caracteres especiales
+for _, mapping in ipairs(spanish_chars) do
+  map("i", mapping.key, insert_accent(mapping.char), { desc = mapping.desc })
+end
 
 -- Select text in insert mode
 map("i", "<C-h>", "<Esc>vb", { desc = "Seleccionar palabra anterior" })
