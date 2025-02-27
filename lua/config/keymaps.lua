@@ -34,8 +34,8 @@ for _, mapping in ipairs(spanish_chars) do
 end
 
 -- Select text in insert mode
-map("i", "<C-h>", "<Esc>vb", { desc = "Seleccionar palabra anterior" })
-map("i", "<C-l>", "<Esc>ve", { desc = "Seleccionar siguiente palabra" })
+map("i", "<A-h>", "<Esc>vb", { desc = "Seleccionar palabra anterior" }) -- Alt+h
+map("i", "<A-l>", "<Esc>ve", { desc = "Seleccionar siguiente palabra" }) -- Alt+l
 map("i", "<S-Tab>", "<Esc>vec", { desc = "Seleccionar y editar siguiente palabra" })
 -- Go to end the line in insert mode
 map("i", "<C-e>", "<Esc>l$a", { desc = "Mover cursor al final de la línea" })

@@ -18,37 +18,71 @@ function M.detect_framework()
   }
 
   local result = { vue = false, angular = false }
+  local cwd = vim.fn.getcwd()
+
+  -- Utilidad para buscar archivos recursivamente desde el directorio actual
+  local function find_file(file)
+    return vim.fn.findfile(file, cwd .. ";")
+  end
+
+  -- Utilidad para buscar directorios
+  local function find_dir(dir)
+    return vim.fn.finddir(dir, cwd .. ";")
+  end
 
   -- Buscar archivos de configuración característicos de cada framework
   for framework, config in pairs(frameworks) do
     -- Buscar archivos de configuración
     for _, file in ipairs(config.files) do
-      if vim.fn.findfile(file, ".;") ~= "" then
+      local found_file = find_file(file)
+      if found_file ~= "" then
+        vim.notify(
+          "Framework detectado (" .. framework .. "): archivo " .. file .. " encontrado en " .. found_file,
+          vim.log.levels.DEBUG
+        )
         result[framework] = true
         break
       end
+    end
+
+    if result[framework] then
+      goto continue
     end
 
     -- Buscar directorios característicos
     for _, dir in ipairs(config.dirs) do
-      if vim.fn.isdirectory(vim.fn.finddir(dir, ".;")) == 1 then
+      local found_dir = find_dir(dir)
+      if found_dir ~= "" then
+        vim.notify(
+          "Framework detectado (" .. framework .. "): directorio " .. dir .. " encontrado",
+          vim.log.levels.DEBUG
+        )
         result[framework] = true
         break
       end
     end
 
-    -- Verificar en package.json si no se ha detectado aún
-    if not result[framework] and vim.fn.filereadable("package.json") == 1 then
-      local package_json = vim.fn.readfile("package.json")
-      local package_content = table.concat(package_json, "\n")
+    if result[framework] then
+      goto continue
+    end
 
+    -- Verificar en package.json si no se ha detectado aún
+    local package_json = find_file("package.json")
+    if package_json ~= "" then
+      local content = table.concat(vim.fn.readfile(package_json), "\n")
       for _, dep in ipairs(config.package_deps) do
-        if string.find(package_content, dep) then
+        if string.find(content, '"' .. dep .. '"') then
+          vim.notify(
+            "Framework detectado (" .. framework .. "): dependencia " .. dep .. " encontrada en package.json",
+            vim.log.levels.DEBUG
+          )
           result[framework] = true
           break
         end
       end
     end
+
+    ::continue::
   end
 
   return result
@@ -62,12 +96,10 @@ function M.setup()
   vim.g.is_vue_project = detected.vue
   vim.g.is_angular_project = detected.angular
 
-  -- Salida de log para debug
+  -- Notificar el tipo de proyecto detectado con un nivel más alto para asegurar visibilidad
   if detected.vue then
     vim.notify("Vue project detected", vim.log.levels.INFO)
-  end
-
-  if detected.angular then
+  elseif detected.angular then
     vim.notify("Angular project detected", vim.log.levels.INFO)
   end
 

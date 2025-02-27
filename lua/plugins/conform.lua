@@ -5,12 +5,6 @@ return {
     lazy = true,
     cmd = "ConformInfo",
     opts = {
-      -- Define el comportamiento de formato
-      format_on_save = {
-        -- Estas opciones se aplicarán a format_on_save
-        timeout_ms = 3000,
-        lsp_fallback = true,
-      },
       -- Configuración de formatters por tipo de archivo
       formatters_by_ft = {
         lua = { "stylua" },

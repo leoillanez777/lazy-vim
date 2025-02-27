@@ -39,9 +39,9 @@ return {
       -- Solo configuramos angularls si estamos en un proyecto Angular
       if vim.g.is_angular_project then
         -- Habilitamos angularls para proyectos Angular
-        opts.servers.angularls = { enabled = true }
+        opts.servers.angularls = { enabled = false }
         -- Deshabilitamos cssls en proyectos Angular
-        opts.servers.cssls = { enabled = false }
+        opts.servers.cssls = { enabled = true }
       else
         -- Configuración por defecto
         opts.servers.angularls = { enabled = false }
