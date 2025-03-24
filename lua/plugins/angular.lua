@@ -42,6 +42,9 @@ return {
         opts.servers.angularls = { enabled = false }
         -- Deshabilitamos cssls en proyectos Angular
         opts.servers.cssls = { enabled = true }
+        -- Deshabilitamos tsserver en proyectos Angular
+        opts.servers.tsserver = { enabled = false }
+        opts.servers.ts_ls = { enabled = false }
       else
         -- Configuración por defecto
         opts.servers.angularls = { enabled = false }
