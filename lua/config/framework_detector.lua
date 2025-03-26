@@ -22,12 +22,14 @@ function M.detect_framework()
 
   -- Utilidad para buscar archivos recursivamente desde el directorio actual
   local function find_file(file)
-    return vim.fn.findfile(file, cwd .. ";")
+    local found = vim.fn.findfile(file, cwd .. ";")
+    return found
   end
 
   -- Utilidad para buscar directorios
   local function find_dir(dir)
-    return vim.fn.finddir(dir, cwd .. ";")
+    local found = vim.fn.finddir(dir, cwd .. ";")
+    return found
   end
 
   -- Buscar archivos de configuración característicos de cada framework
@@ -101,6 +103,38 @@ function M.setup()
     vim.notify("Vue project detected", vim.log.levels.INFO)
   elseif detected.angular then
     vim.notify("Angular project detected", vim.log.levels.INFO)
+    -- Para proyectos Angular, verificamos la versión para decidir qué LSP usar
+    local ts_framework = require("config.typescript-framework")
+    local version, major = ts_framework.get_angular_version()
+
+    if version then
+      if major and major >= 12 then
+        vim.notify("Modern Angular detected (v" .. major .. "). Using angularls is recommended.", vim.log.levels.INFO)
+      else
+        vim.notify(
+          "Legacy Angular detected (v" .. major .. "). Using vtsls for better compatibility.",
+          vim.log.levels.INFO
+        )
+      end
+    end
+  else
+    -- Para proyectos no-Angular, verificar la versión de TypeScript
+    if detected.vue == false and detected.angular == false then
+      local ts_framework = require("config.typescript-framework")
+      local version = ts_framework.get_typescript_version()
+
+      if version then
+        local major = tonumber(version:match("^(%d+)"))
+        if major and major < 4 then
+          vim.notify(
+            "Legacy TypeScript detected (v" .. version .. "). Using vtsls for better compatibility.",
+            vim.log.levels.INFO
+          )
+        else
+          vim.notify("Modern TypeScript detected (v" .. version .. "). Using tsserver.", vim.log.levels.INFO)
+        end
+      end
+    end
   end
 
   return detected

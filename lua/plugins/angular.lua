@@ -20,7 +20,10 @@ return {
   {
     "neovim/nvim-lspconfig",
     opts = function(_, opts)
+      local ts_framework = require("config.typescript-framework")
       opts.servers = opts.servers or {}
+
+      -- Configure HTML server with proper exclusions for Angular
       opts.servers.html = {
         filetypes = { "html" },
         root_dir = function(fname)
@@ -36,20 +39,129 @@ return {
           )
         end,
       }
-      -- Solo configuramos angularls si estamos en un proyecto Angular
-      if vim.g.is_angular_project then
-        -- Habilitamos angularls para proyectos Angular
+
+      -- Only configure Angular LSP if in Angular project and should use Angular LSP
+      if vim.g.is_angular_project and ts_framework.should_use_angular_lsp() then
+        -- Define proper root directory criteria for angularls
+        opts.servers.angularls = {
+          filetypes = { "typescript", "html", "typescriptreact", "typescript.tsx", "htmlangular" },
+          root_dir = function(fname)
+            local util = require("lspconfig.util")
+            return util.root_pattern("angular.json", "project.json")(fname)
+          end,
+          -- Ensure Angular knows where to find TypeScript
+          init_options = {
+            codeAnalysis = {
+              updateImportsOnFileMove = {
+                enabled = "always",
+              },
+            },
+            suggest = {
+              includeCompletionsForImportStatements = true,
+            },
+          },
+          -- Set proper cmd with TypeScript paths
+          on_new_config = function(new_config, new_root_dir)
+            local project_root = new_root_dir
+            -- Find typescript in node_modules
+            local ts_path = vim.fn.finddir("node_modules/typescript", project_root .. ";")
+            if ts_path == "" then
+              ts_path = vim.fn.expand("$HOME/.local/share/nvim/mason/packages/angular-language-server/node_modules")
+            else
+              ts_path = project_root .. "/" .. ts_path:gsub("typescript$", "")
+            end
+
+            new_config.cmd = {
+              "ngserver",
+              "--stdio",
+              "--tsProbeLocations",
+              ts_path .. "," .. project_root .. "/node_modules",
+              "--ngProbeLocations",
+              vim.fn.expand(
+                "$HOME/.local/share/nvim/mason/packages/angular-language-server/node_modules/@angular/language-server/node_modules"
+              )
+                .. ","
+                .. project_root
+                .. "/node_modules",
+            }
+          end,
+        }
+
+        -- Disable vtsls for modern Angular projects
+        opts.servers.vtsls = { enabled = false }
+        opts.servers.tsserver = { enabled = false }
+        opts.servers.ts_ls = { enabled = false }
+      elseif vim.g.is_angular_project then
+        -- For legacy Angular, use vtsls and disable angularls
+        opts.servers.vtsls = {
+          filetypes = {
+            "javascript",
+            "javascriptreact",
+            "javascript.jsx",
+            "typescript",
+            "typescriptreact",
+            "typescript.tsx",
+          },
+          root_dir = function(fname)
+            local util = require("lspconfig.util")
+            return util.root_pattern("angular.json", "project.json", "tsconfig.json", "jsconfig.json")(fname)
+          end,
+          -- Configure vtsls to use project TypeScript version
+          on_new_config = function(new_config, new_root_dir)
+            local project_root = new_root_dir
+            -- Find typescript in node_modules
+            local ts_path = vim.fn.finddir("node_modules/typescript", project_root .. ";")
+            if ts_path ~= "" then
+              new_config.init_options = new_config.init_options or {}
+              new_config.init_options.typescript = new_config.init_options.typescript or {}
+              new_config.init_options.typescript.tsdk = project_root .. "/" .. ts_path .. "/lib"
+              new_config.init_options.typescript.diagnostics = { enable = true }
+            else
+              vim.notify("vtsls: TypeScript not found in node_modules, using bundled version", vim.log.levels.WARN)
+            end
+          end,
+        }
+
+        -- Disable angularls and tsserver for legacy Angular
         opts.servers.angularls = { enabled = false }
-        -- Deshabilitamos cssls en proyectos Angular
-        opts.servers.cssls = { enabled = true }
-        -- Deshabilitamos tsserver en proyectos Angular
         opts.servers.tsserver = { enabled = false }
         opts.servers.ts_ls = { enabled = false }
       else
-        -- Configuración por defecto
+        -- Not an Angular project - determine if we should use vtsls based on TypeScript version
+        if ts_framework.is_legacy_typescript() then
+          -- Legacy TypeScript, use vtsls
+          opts.servers.vtsls = {
+            filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue", "json" },
+            on_new_config = function(new_config, new_root_dir)
+              local project_root = new_root_dir
+              -- Find typescript in node_modules
+              local ts_path = vim.fn.finddir("node_modules/typescript", project_root .. ";")
+              if ts_path ~= "" then
+                new_config.init_options = new_config.init_options or {}
+                new_config.init_options.typescript = new_config.init_options.typescript or {}
+                new_config.init_options.typescript.tsdk = project_root .. "/" .. ts_path .. "/lib"
+                vim.notify(
+                  "vtsls: Using TypeScript from " .. new_config.init_options.typescript.tsdk,
+                  vim.log.levels.INFO
+                )
+              else
+                vim.notify("vtsls: TypeScript not found in node_modules, using bundled version", vim.log.levels.WARN)
+              end
+            end,
+          }
+          opts.servers.tsserver = { enabled = false }
+          opts.servers.ts_ls = { enabled = false }
+        else
+          -- Modern TypeScript, use tsserver
+          opts.servers.ts_ls = {}
+          opts.servers.vtsls = { enabled = false }
+        end
+        -- Disable angularls for non-Angular projects
         opts.servers.angularls = { enabled = false }
-        opts.servers.cssls = { enabled = true }
       end
+
+      -- Always enable CSS for any project type
+      opts.servers.cssls = { enabled = true }
     end,
   },
   {
@@ -61,7 +173,9 @@ return {
         "css-lsp",
       })
 
-      if vim.g.is_angular_project then
+      -- Check if we should install angular-language-server
+      local ts_framework = require("config.typescript-framework")
+      if vim.g.is_angular_project and ts_framework.should_use_angular_lsp() then
         table.insert(opts.ensure_installed, "angular-language-server")
       end
     end,
