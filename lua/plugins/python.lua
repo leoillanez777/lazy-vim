@@ -56,9 +56,38 @@ return {
       },
       setup = {
         ["ruff"] = function()
-          require("lazyvim.util").lsp.on_attach(function(client, _)
+          require("lazyvim.util").lsp.on_attach(function(client, bufnr)
             -- Disable hover in favor of Pyright
             client.server_capabilities.hoverProvider = false
+
+            -- Ensure code actions are enabled for Ruff
+            client.server_capabilities.codeActionProvider = true
+
+            -- Add dedicated keymapping for Ruff code actions
+            vim.keymap.set("n", "<leader>cfR", function()
+              vim.lsp.buf.code_action({
+                filter = function(action)
+                  return action.title:find("ruff") ~= nil
+                end,
+                apply = true,
+              })
+            end, { buffer = bufnr, desc = "Ruff Code Action" })
+          end)
+        end,
+        ["pyright"] = function(_, _)
+          require("lazyvim.util").lsp.on_attach(function(client, bufnr)
+            -- Ensure hover is enabled for Pyright
+            client.server_capabilities.hoverProvider = true
+
+            -- Map specific pyright code actions
+            vim.keymap.set("n", "<leader>cfP", function()
+              vim.lsp.buf.code_action({
+                filter = function(action)
+                  return action.title:find("pyright") ~= nil
+                end,
+                apply = true,
+              })
+            end, { buffer = bufnr, desc = "Pyright Code Action" })
           end)
         end,
       },

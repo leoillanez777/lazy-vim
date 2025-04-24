@@ -5,7 +5,7 @@ return {
   version = false, -- set this if you want to always pull the latest change
   opts = {
     -- add any opts here
-    provider = "openai",
+    provider = "gemini",
     openai = {
       endpoint = "http://localhost:11434/v1/",
       model = "llama3.1:8b-instruct-q8_0",
@@ -13,6 +13,16 @@ return {
       temperature = 0,
       max_tokens = 4096,
       disable_tools = true,
+    },
+    gemini = {
+      -- @see https://ai.google.dev/gemini-api/docs/models/gemini
+      model = "gemini-2.5-pro-exp-03-25",
+      timeout = 30000, -- timeout in milliseconds
+      temperature = 0, -- adjust if needed
+      max_tokens = 4096,
+    },
+    ollama = {
+      model = "llama-13B",
     },
     chat = {
       open_chat_on_startup = false,
