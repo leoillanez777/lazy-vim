@@ -117,7 +117,7 @@ return {
     },
     config = function()
       -- Comprobar si existe un entorno virtual en el directorio actual
-      local cwd_venv = vim.fn.getcwd() .. "/venv/bin/python"
+      local cwd_venv = vim.fn.getcwd() .. "/.venv/bin/python"
       if vim.fn.executable(cwd_venv) == 1 then
         -- Usar el entorno virtual del proyecto actual
         require("dap-python").setup(cwd_venv)
