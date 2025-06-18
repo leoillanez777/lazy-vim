@@ -5,35 +5,22 @@ return {
   version = false, -- set this if you want to always pull the latest change
   opts = {
     -- add any opts here
-    provider = "gemini",
-    openai = {
-      endpoint = "http://localhost:11434/v1/",
-      model = "llama3.1:8b-instruct-q8_0",
-      timeout = 60000,
-      temperature = 0,
-      max_tokens = 4096,
-      disable_tools = true,
-    },
-    gemini = {
-      -- @see https://ai.google.dev/gemini-api/docs/models/gemini
-      model = "gemini-2.5-pro-exp-03-25",
-      timeout = 30000, -- timeout in milliseconds
-      temperature = 0, -- adjust if needed
-      max_tokens = 4096,
-    },
-    ollama = {
-      model = "llama-13B",
-    },
-    chat = {
-      open_chat_on_startup = false,
-      open_floating_window = true,
-      window_width = 0.8, -- 80% de la pantalla
-      window_height = 0.8, -- 80% de la pantalla
-    },
-    keymaps = {
-      toggle = "<leader>ai", -- Tecla para abrir/cerrar Avante
-      exec_line = "<leader>al", -- Ejecutar la línea actual
-      exec_selection = "<leader>as", -- Ejecutar selección
+    provider = "ollama",
+    providers = {
+      openai = {
+        endpoint = "http://localhost:11434/v1/",
+        model = "llama3.1", -- your desired model (or use gpt-4o, etc.)
+        extra_request_body = {
+          timeout = 30000, -- Timeout in milliseconds, increase this for reasoning models
+          temperature = 0.75,
+          max_completion_tokens = 8192, -- Increase this to include reasoning tokens (for reasoning models)
+          --reasoning_effort = "medium", -- low|medium|high, only used for reasoning models
+        },
+      },
+      ollama = {
+        endpoint = "http://localhost:11434",
+        model = "devstral",
+      },
     },
   },
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
