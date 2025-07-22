@@ -19,7 +19,7 @@ return {
       },
       ollama = {
         endpoint = "http://localhost:11434",
-        model = "devstral",
+        model = "deepseek-r1",
       },
     },
   },
