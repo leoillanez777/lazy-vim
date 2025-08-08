@@ -81,3 +81,13 @@ map("n", "<leader>cft", function()
   vim.b.format_on_save = not format_on_save
   print("Format on save: " .. tostring(not format_on_save))
 end, { desc = "Toggle Format on Save" })
+
+-- Background toggle
+map("n", "<leader>wB", function()
+  if vim.o.background == "dark" then
+    vim.o.background = "light"
+  else
+    vim.o.background = "dark"
+  end
+  print("Background: " .. vim.o.background)
+end, { desc = "Toggle Background (Dark/Light)" })

@@ -12,6 +12,8 @@ function M.setup()
     vim.g.project_type = "vue"
   elseif detected.angular then
     vim.g.project_type = "angular"
+  elseif detected.react then
+    vim.g.project_type = "react"
   else
     vim.g.project_type = "generic"
   end
@@ -27,6 +29,8 @@ function M.setup()
             return " Vue"
           elseif vim.g.project_type == "angular" then
             return " Angular"
+          elseif vim.g.project_type == "react" then
+            return "⚛ React"
           else
             return ""
           end
@@ -37,6 +41,8 @@ function M.setup()
         color = function()
           if vim.g.project_type == "vue" then
             return { fg = "#41b883", gui = "bold" } -- Color de Vue
+          elseif vim.g.project_type == "react" then
+            return { fg = "#61dafb", gui = "bold" } -- Color de React
           else
             return { fg = "#DD0031", gui = "bold" } -- Color de Angular
           end

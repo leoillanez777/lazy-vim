@@ -15,9 +15,14 @@ function M.detect_framework()
       dirs = {},
       package_deps = { "@angular/core" },
     },
+    react = {
+      files = { "next.config.js", "next.config.mjs", "gatsby-config.js", "craco.config.js" },
+      dirs = {},
+      package_deps = { "react", "react-dom", "next", "gatsby" },
+    },
   }
 
-  local result = { vue = false, angular = false }
+  local result = { vue = false, angular = false, react = false }
   local cwd = vim.fn.getcwd()
 
   -- Utilidad para buscar archivos recursivamente desde el directorio actual
@@ -97,10 +102,13 @@ function M.setup()
   -- Guardar la información detectada como variables globales para usar en otros archivos
   vim.g.is_vue_project = detected.vue
   vim.g.is_angular_project = detected.angular
+  vim.g.is_react_project = detected.react
 
   -- Notificar el tipo de proyecto detectado con un nivel más alto para asegurar visibilidad
   if detected.vue then
     vim.notify("Vue project detected", vim.log.levels.INFO)
+  elseif detected.react then
+    vim.notify("React project detected", vim.log.levels.INFO)
   elseif detected.angular then
     vim.notify("Angular project detected", vim.log.levels.INFO)
     -- Para proyectos Angular, verificamos la versión para decidir qué LSP usar
@@ -118,8 +126,8 @@ function M.setup()
       end
     end
   else
-    -- Para proyectos no-Angular, verificar la versión de TypeScript
-    if detected.vue == false and detected.angular == false then
+    -- Para proyectos no-framework, verificar la versión de TypeScript
+    if detected.vue == false and detected.angular == false and detected.react == false then
       local ts_framework = require("config.typescript-framework")
       local version = ts_framework.get_typescript_version()
 

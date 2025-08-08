@@ -5,8 +5,14 @@ return {
   version = false, -- set this if you want to always pull the latest change
   opts = {
     -- add any opts here
-    provider = "ollama",
+    provider = "gemini",
     providers = {
+      gemini = {
+        model = "gemini-2.5-pro-exp-03-25",
+        timeout = 30000,
+        temperature = 0,
+        max_tokens = 8192,
+      },
       openai = {
         endpoint = "http://localhost:11434/v1/",
         model = "llama3.1", -- your desired model (or use gpt-4o, etc.)
