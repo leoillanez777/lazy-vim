@@ -10,3 +10,6 @@ opt.shiftwidth = 2 -- Size of an indent
 opt.smartindent = true -- Insert indents automatically
 opt.softtabstop = 2 -- Number of spaces tabs count for
 opt.tabstop = 2 -- Number of spaces tabs count for
+
+-- Load SQL database connections
+require("config.sql-connections")

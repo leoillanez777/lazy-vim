@@ -6,3 +6,5 @@ debug
 foo.*
 *.log
 data
+lua/config/sql-connections.lua
+.lazy.lua

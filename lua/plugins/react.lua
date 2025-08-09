@@ -1,9 +1,5 @@
 return {
   {
-    "nvim-treesitter/nvim-treesitter",
-    opts = { ensure_installed = { "tsx", "typescript", "javascript", "jsx", "css", "html" } },
-  },
-  {
     "williamboman/mason-lspconfig.nvim",
     opts = function(_, opts)
       if vim.g.is_react_project then
@@ -24,7 +20,7 @@ return {
       -- Solo configuramos para proyectos React
       if vim.g.is_react_project then
         opts.servers = opts.servers or {}
-        
+
         -- TypeScript/JavaScript server con timeout aumentado
         opts.servers.tsserver = {
           timeout_ms = 15000,
@@ -82,7 +78,7 @@ return {
             local lib_path = vim.fs.find("node_modules/typescript/lib", {
               path = new_root_dir,
               upward = true,
-              type = "directory"
+              type = "directory",
             })[1]
             if lib_path then
               new_config.init_options = new_config.init_options or {}
@@ -91,7 +87,7 @@ return {
             end
           end,
         }
-        
+
         -- ESLint configuration
         opts.servers.eslint = {
           timeout_ms = 10000,
@@ -99,15 +95,15 @@ return {
             codeAction = {
               disableRuleComment = {
                 enable = true,
-                location = "separateLine"
+                location = "separateLine",
               },
               showDocumentation = {
-                enable = true
-              }
+                enable = true,
+              },
             },
             codeActionOnSave = {
               enable = false,
-              mode = "all"
+              mode = "all",
             },
             format = false,
             nodePath = "",
@@ -119,11 +115,11 @@ return {
             useESLintClass = false,
             validate = "on",
             workingDirectory = {
-              mode = "location"
-            }
-          }
+              mode = "location",
+            },
+          },
         }
-        
+
         -- TailwindCSS si está presente
         opts.servers.tailwindcss = {
           timeout_ms = 10000,
@@ -140,7 +136,7 @@ return {
             },
           },
         }
-        
+
         -- Deshabilitar volar y vtsls para proyectos React
         opts.servers.volar = { enabled = false }
         opts.servers.vtsls = { enabled = false }
@@ -170,13 +166,14 @@ return {
     opts = function(_, opts)
       if vim.g.is_react_project then
         opts.ensure_installed = opts.ensure_installed or {}
-        vim.list_extend(opts.ensure_installed, { 
-          "typescript-language-server", 
-          "eslint-lsp", 
+        vim.list_extend(opts.ensure_installed, {
+          "typescript-language-server",
+          "eslint-lsp",
           "prettier",
-          "tailwindcss-language-server"
+          "tailwindcss-language-server",
         })
       end
     end,
   },
 }
+
