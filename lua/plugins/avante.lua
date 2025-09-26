@@ -37,7 +37,7 @@ return {
     "nvim-lua/plenary.nvim",
     "MunifTanjim/nui.nvim",
     --- The below dependencies are optional,
-    "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
+    "nvim-mini/mini.icons",
     "zbirenbaum/copilot.lua", -- for providers='copilot'
     {
       -- support for image pasting
@@ -51,9 +51,9 @@ return {
           drag_and_drop = {
             insert_mode = true,
           },
-          -- required for Windows users
-          use_absolute_path = true,
         },
+        -- Disable auto-detection to avoid errors
+        auto_detect = false,
       },
     },
     {

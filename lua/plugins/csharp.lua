@@ -4,7 +4,7 @@ return {
     opts = { ensure_installed = { "c_sharp" } },
   },
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     opts = { ensure_installed = { "csharpier", "netcoredbg" } },
   },
   { "Hoffs/omnisharp-extended-lsp.nvim", lazy = true },

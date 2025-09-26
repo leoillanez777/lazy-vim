@@ -1,6 +1,6 @@
 return {
   {
-    "williamboman/mason-lspconfig.nvim",
+    "mason-org/mason-lspconfig.nvim",
     opts = function(_, opts)
       if vim.g.is_react_project then
         opts.ensure_installed = opts.ensure_installed or {}
@@ -13,8 +13,8 @@ return {
   {
     "neovim/nvim-lspconfig",
     dependencies = {
-      "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
+      "mason-org/mason.nvim",
+      "mason-org/mason-lspconfig.nvim",
     },
     opts = function(_, opts)
       -- Solo configuramos para proyectos React
@@ -162,7 +162,7 @@ return {
     end,
   },
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     opts = function(_, opts)
       if vim.g.is_react_project then
         opts.ensure_installed = opts.ensure_installed or {}
@@ -176,4 +176,3 @@ return {
     end,
   },
 }
-
