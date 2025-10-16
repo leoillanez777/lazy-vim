@@ -8,3 +8,4 @@ foo.*
 data
 lua/config/sql-connections.lua
 .lazy.lua
+lazy-lock.json

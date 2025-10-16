@@ -157,4 +157,16 @@ return {
       },
     },
   },
+  {
+    "linux-cultist/venv-selector.nvim",
+    cmd = "VenvSelect",
+    ft = "python", -- Load when opening Python files
+    keys = { { "<leader>ce", "<cmd>:VenvSelect<cr>", desc = "Select VirtualEnv", ft = "python" } },
+    opts = { -- this can be an empty lua table - just showing below for clarity.
+      search = {}, -- if you add your own searches, they go here.
+      options = {
+        notify_user_on_venv_activation = true,
+      }, -- if you add plugin options, they go here.
+    },
+  },
 }
