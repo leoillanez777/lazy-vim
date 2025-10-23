@@ -6,6 +6,9 @@ return {
   opts = {
     -- add any opts here
     provider = "gemini",
+    mappings = {
+      prefix = "<leader>av",
+    },
     providers = {
       gemini = {
         model = "gemini-2.5-pro-exp-03-25",
