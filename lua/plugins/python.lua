@@ -56,7 +56,7 @@ return {
       },
       setup = {
         ["ruff"] = function()
-          require("lazyvim.util").lsp.on_attach(function(client, bufnr)
+          Snacks.util.lsp.on({ name = "ruff" }, function(buffer, client)
             -- Disable hover in favor of Pyright
             client.server_capabilities.hoverProvider = false
 
@@ -71,11 +71,11 @@ return {
                 end,
                 apply = true,
               })
-            end, { buffer = bufnr, desc = "Ruff Code Action" })
+            end, { buffer = buffer, desc = "Ruff Code Action" })
           end)
         end,
         ["pyright"] = function(_, _)
-          require("lazyvim.util").lsp.on_attach(function(client, bufnr)
+          Snacks.util.lsp.on({ name = "pyright" }, function(buffer, client)
             -- Ensure hover is enabled for Pyright
             client.server_capabilities.hoverProvider = true
 
@@ -87,7 +87,7 @@ return {
                 end,
                 apply = true,
               })
-            end, { buffer = bufnr, desc = "Pyright Code Action" })
+            end, { buffer = buffer, desc = "Pyright Code Action" })
           end)
         end,
       },

@@ -47,8 +47,7 @@ wk.add({
   { "<leader>F", group = " Conflictos", icon = "" },
   { "<leader>d", group = "Debbuger", icon = "" },
   { "<leader>cf", group = "Format", icon = "" },
-  { "<leader>a", group = "AI (Claude | Avante | Codeium)", icon = "" },
-  { "<leader>ac", group = "Claude Code", icon = "" },
+  { "<leader>a", group = "AI (Avante | Codeium)", icon = "" },
   { "<leader>av", group = "Avante", icon = "󰚩" },
   { "<leader>ae", group = "Codeium", icon = "󰈌" },
 })
