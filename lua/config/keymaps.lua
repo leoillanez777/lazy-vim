@@ -67,7 +67,10 @@ map("n", "<leader>Fl", "<cmd>GitConflictListQf<cr>", { desc = " Lista de conf
 map("n", "<leader>Fa", "<cmd>Gwrite<cr>", { desc = " Grabar Cambios" })
 
 -- Agregar una opción para ejecutar :LspRestart con <leader>x -> r, con icono de reinicio 
-map("n", "<leader>xr", "<cmd>LspRestart<cr>", { desc = " Reiniciar LSP" })
+map("n", "<leader>xr", function()
+  require("lazy").load({ plugins = { "nvim-lspconfig" } })
+  vim.cmd("LspRestart")
+end, { desc = " Reiniciar LSP" })
 map("n", "<leader>xR", "<cmd>edit ~/.local/state/nvim/lsp.log<cr>", { desc = "Ver log LSP" })
 
 -- Format commands
